@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理面板 - Delicious Kitchen</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .admin-wrapper { display: flex; height: 100vh; }
+    .sidebar { width: 250px; background: var(--secondary-color); color: white; padding: 20px; overflow-y: auto; }
+    .sidebar h2 { margin: 0 0 30px 0; font-size: 20px; }
+    .nav-item { padding: 15px 20px; cursor: pointer; border-radius: 5px; margin-bottom: 10px; transition: all 0.3s; }
+    .nav-item:hover { background: rgba(255,255,255,0.2); }
+    .nav-item.active { background: var(--primary-color); }
+    .content { flex: 1; overflow-y: auto; }
+    .admin-header { background: var(--light-gray); padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .admin-title { margin: 0; color: var(--secondary-color); }
+    .logout-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    .panel { display: none; padding: 20px; }
+    .panel.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .stat-label { color: #666; font-size: 14px; margin-bottom: 10px; }
+    .stat-value { font-size: 32px; font-weight: bold; color: var(--primary-color); }
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 10px; }
+    th { background: var(--light-gray); padding: 15px; text-align: left; font-weight: bold; color: var(--secondary-color); border-bottom: 2px solid var(--border-color); }
+    td { padding: 15px; border-bottom: 1px solid var(--border-color); }
+    tr:hover { background: var(--light-gray); }
+    .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.3s; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { background: #e55a28; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-danger:hover { background: #b91f1f; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: var(--secondary-color); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--secondary-color); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+    .form-group textarea { resize: vertical; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .modal-footer button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    .btn-save { background: var(--primary-color); color: white; }
+    .btn-save:hover { background: #e55a28; }
+    .btn-cancel { background: var(--light-gray); color: var(--dark-gray); }
+    .refresh-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-bottom: 20px; }
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+    .badge-submitted { background: #ffeaa7; color: #d63031; }
+    .badge-accepted { background: #81ecec; color: #0984e3; }
+    .badge-completed { background: #a8e6cf; color: #06a77d; }
+    .badge-cancelled { background: #fab1a0; color: #c92a2a; }
+    .search-box { margin-bottom: 20px; }
+    .search-box input { padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; width: 300px; font-size: 14px; }
+    .status-option {
+      padding: 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s;
+      background: white;
+      color: var(--secondary-color);
+      font-weight: bold;
+    }
+    .status-option:hover {
+      border-color: var(--primary-color);
+      background: rgba(255, 107, 53, 0.1);
+    }
+    .status-option.selected {
+      border-color: var(--primary-color);
+      background: var(--primary-color);
+      color: white;
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-wrapper">
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+      <h2>🍽️ 管理面板</h2>
+      <div class="nav-item active" onclick="switchPanel('orders')">📦 订单管理</div>
+      <div class="nav-item" onclick="switchPanel('dishes')">🍜 菜单管理</div>
+      <div class="nav-item" onclick="switchPanel('users')">👥 用户管理</div>
+      <hr style="margin-top: 40px; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+      <button class="logout-btn" style="width: 100%; margin-top: 20px;" onclick="logout()">🚪 退出登录</button>
+    </div>
+
+    <!-- 右侧内容 -->
+    <div class="content">
+      <div class="admin-header">
+        <h1 class="admin-title" id="panel-title">📦 订单管理</h1>
+        <div id="user-info" style="color: var(--secondary-color);"></div>
+      </div>
+
+      <!-- 订单管理面板 -->
+      <div id="orders-panel" class="panel active" style="padding: 20px;">
+        <div class="stats-grid" id="order-stats"></div>
+        <button class="refresh-btn" onclick="loadOrders()">🔄 刷新订单</button>
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>订单号</th>
+              <th>顾客</th>
+              <th>手机号</th>
+              <th>状态</th>
+              <th>金额</th>
+              <th>时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 菜单管理面板 -->
+      <div id="dishes-panel" class="panel" style="padding: 20px;">
+        <button class="refresh-btn" onclick="openDishModal()">➕ 添加新菜品</button>
+        <table id="dishes-table">
+          <thead>
+            <tr>
+              <th>菜名</th>
+              <th>分类</th>
+              <th>描述</th>
+              <th>价格</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="dishes-tbody">
+            <tr><td colspan="6" style="text-align: center;">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 用户管理面板 -->
+      <div id="users-panel" class="panel" style="padding: 20px;">
+        <div class="search-box">
+          <input type="text" id="user-search" placeholder="搜索用户名或手机号..." onkeyup="filterUsers()">
+        </div>
+        <button class="refresh-btn" onclick="loadUsers()">🔄 刷新用户</button>
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th>用户名</th>
+              <th>手机号</th>
+              <th>地址</th>
+              <th>订单数</th>
+              <th>总消费</th>
+              <th>注册时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 订单状态编辑模态框 -->
+  <div class="modal" id="orderStatusModal">
+    <div class="modal-content">
+      <div class="modal-header">修改订单状态</div>
+      <div style="margin-bottom: 20px;"><p id="orderInfo"></p></div>
+      <div class="status-grid">
+        <div class="status-option" data-status="submitted" onclick="selectStatus('submitted')">已提交</div>
+        <div class="status-option" data-status="accepted" onclick="selectStatus('accepted')">已接受</div>
+        <div class="status-option" data-status="completed" onclick="selectStatus('completed')">已完成</div>
+        <div class="status-option" data-status="cancelled" onclick="selectStatus('cancelled')">已取消</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('orderStatusModal')">取消</button>
+        <button class="btn-save" onclick="saveOrderStatus()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 菜品编辑模态框 -->
+  <div class="modal" id="dishModal">
+    <div class="modal-content">
+      <div class="modal-header" id="dishModalTitle">添加新菜品</div>
+      <div class="form-group">
+        <label>菜名 *</label>
+        <input type="text" id="dish-name" placeholder="输入菜名">
+      </div>
+      <div class="form-group">
+        <label>分类 *</label>
+        <select id="dish-category">
+          <option value="">选择分类</option>
+          <option value="main">主食</option>
+          <option value="snack">小食</option>
+          <option value="drink">饮品</option>
+          <option value="dessert">甜品</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>价格 *</label>
+        <input type="number" id="dish-price" placeholder="输入价格" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>描述</label>
+        <textarea id="dish-description" placeholder="输入菜品描述（可选）" rows="3"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeDishModal()">取消</button>
+        <button class="btn-save" onclick="saveDish()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusLabels = { submitted: '已提交', accepted: '已接受', completed: '已完成', cancelled: '已取消' };
+    const categoryLabels = { main: '主食', snack: '小食', drink: '饮品', dessert: '甜品' };
+    let currentOrderId = null;
+    let currentDishId = null;
+    let selectedStatus = null;
+    let allUsers = [];
+
+    function switchPanel(panel) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(panel + '-panel').classList.add('active');
+      event.target.classList.add('active');
+
+      const titles = { orders: '📦 订单管理', dishes: '🍜 菜单管理', users: '👥 用户管理' };
+      document.getElementById('panel-title').textContent = titles[panel];
+
+      if (panel === 'orders') loadOrders();
+      else if (panel === 'dishes') loadDishes();
+      else if (panel === 'users') loadUsers();
+    }
+
+    async function loadOrders() {
+      try {
+        const res = await fetch('/api/orders/admin/all');
+        const data = await res.json();
+        const orders = data.data || [];
+        const tbody = document.getElementById('orders-tbody');
+
+        const stats = {
+          total: orders.length,
+          submitted: orders.filter(o => o.status === 'submitted').length,
+          accepted: orders.filter(o => o.status === 'accepted').length,
+          completed: orders.filter(o => o.status === 'completed').length,
+          totalAmount: orders.reduce((sum, o) => sum + (o.total_price || 0), 0)
+        };
+
+        document.getElementById('order-stats').innerHTML = `
+          <div class="stat-card"><div class="stat-label">总订单数</div><div class="stat-value">${stats.total}</div></div>
+          <div class="stat-card"><div class="stat-label">待处理</div><div class="stat-value" style="color: #ffc107;">${stats.submitted}</div></div>
+          <div class="stat-card"><div class="stat-label">已接受</div><div class="stat-value" style="color: #17a2b8;">${stats.accepted}</div></div>
+          <div class="stat-card"><div class="stat-label">已完成</div><div class="stat-value" style="color: #28a745;">${stats.completed}</div></div>
+          <div class="stat-card"><div class="stat-label">总营收</div><div class="stat-value">$${stats.totalAmount.toFixed(2)}</div></div>
+        `;
+
+        if (orders.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">暂无订单</td></tr>'; return; }
+        tbody.innerHTML = orders.map(order => `
+          <tr>
+            <td><strong>${order.order_number}</strong></td>
+            <td>${order.customer_name || '未知'}</td>
+            <td>${order.phone || '-'}</td>
+            <td><span class="badge badge-${order.status}">${statusLabels[order.status]}</span></td>
+            <td>$${(order.total_price || 0).toFixed(2)}</td>
+            <td>${new Date(order.created_at).toLocaleDateString('zh-CN')}</td>
+            <td><div class="action-buttons">
+              <button class="btn btn-primary" onclick="openOrderStatusModal(${order.id}, '${order.status}')">修改状态</button>
+              <button class="btn btn-danger" onclick="deleteOrder(${order.id}, '${order.order_number}')">删除</button>
+            </div></td>
+          </tr>
+        `).join('');
+      } catch (error) { alert('加载订单失败: ' + error.message); }
+    }
+
+    async function loadDishes() {
+      try {
+        const res = await fetch('/api/dishes/admin/all-dishes');
+        const data = await res.json();
+        const dishes = data.data || [];
+        const tbody = document.getElementById('dishes-tbody');
+
+        if (dishes.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">暂无菜品</td></tr>'; return; }
+        tbody.innerHTML = dishes.map(dish => `
+          <tr>
+            <td><strong>${dish.name}</strong></td>
+            <td>${categoryLabels[dish.category] || dish.category}</td>
+            <td>${dish.description || '-'}</td>
+            <td>$${(dish.price || 0).toFixed(2)}</td>
+            <td><span class="badge" style="background: ${dish.is_available ? '#a8e6cf' : '#fab1a0'}; color: ${dish.is_available ? '#06a77d' : '#c92a2a'};">${dish.is_available ? '上架' : '下架'}</span></td>
+            <td><div class="action-buttons">
+              <button class="btn btn-primary" onclick="openDishModal(${dish.id})">编辑</button>
+              <button class="btn btn-danger" onclick="deleteDish(${dish.id}, '${dish.name}')">删除</button>
+            </div></td>
+          </tr>
+        `).join('');
+      } catch (error) { alert('加载菜品失败: ' + error.message); }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users/admin/all');
+        const data = await res.json();
+        allUsers = data.data || [];
+        displayUsers(allUsers);
+      } catch (error) { alert('加载用户失败: ' + error.message); }
+    }
+
+    function displayUsers(users) {
+      const tbody = document.getElementById('users-tbody');
+      if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">暂无用户</td></tr>'; return; }
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td><strong>${user.full_name || '未名'}</strong></td>
+          <td>${user.phone}</td>
+          <td>${user.address || '-'}</td>
+          <td>${user.order_count}</td>
+          <td>$${(user.total_spent || 0).toFixed(2)}</td>
+          <td>${new Date(user.created_at).toLocaleDateString('zh-CN')}</td>
+          <td><div class="action-buttons">
+            <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.full_name}')">删除</button>
+          </div></td>
+        </tr>
+      `).join('');
+    }
+
+    function filterUsers() {
+      const query = document.getElementById('user-search').value.toLowerCase();
+      const filtered = allUsers.filter(u => 
+        (u.full_name && u.full_name.toLowerCase().includes(query)) || 
+        (u.phone && u.phone.includes(query))
+      );
+      displayUsers(filtered);
+    }
+
+    function openOrderStatusModal(orderId, currentStatus) {
+      currentOrderId = orderId;
+      selectedStatus = currentStatus;
+      document.getElementById('orderInfo').textContent = `当前状态：${statusLabels[currentStatus]}`;
+      document.querySelectorAll('.status-option').forEach(opt => opt.classList.remove('selected'));
+      document.querySelector(`[data-status="${currentStatus}"]`).classList.add('selected');
+      document.getElementById('orderStatusModal').classList.add('show');
+    }
+
+    function selectStatus(status) {
+      selectedStatus = status;
+      document.querySelectorAll('.status-option').forEach(opt => opt.classList.remove('selected'));
+      document.querySelector(`[data-status="${status}"]`).classList.add('selected');
+    }
+
+    async function saveOrderStatus() {
+      try {
+        const res = await fetch(`/api/orders/admin/${currentOrderId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: selectedStatus })
+        });
+        const data = await res.json();
+        if (data.success) { alert('订单状态已更新'); closeModal('orderStatusModal'); loadOrders(); }
+        else { alert('更新失败: ' + data.message); }
+      } catch (error) { alert('更新失败: ' + error.message); }
+    }
+
+    async function deleteOrder(orderId, orderNumber) {
+      if (!confirm(`确定要删除订单 ${orderNumber} 吗？`)) return;
+      try {
+        const res = await fetch(`/api/orders/admin/${orderId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { alert('订单已删除'); loadOrders(); }
+        else { alert('删除失败: ' + data.message); }
+      } catch (error) { alert('删除失败: ' + error.message); }
+    }
+
+    function openDishModal(dishId) {
+      currentDishId = dishId;
+      if (dishId) {
+        document.getElementById('dishModalTitle').textContent = '编辑菜品';
+        fetch(`/api/dishes/${dishId}`).then(r => r.json()).then(data => {
+          if (data.success) {
+            const dish = data.data;
+            document.getElementById('dish-name').value = dish.name;
+            document.getElementById('dish-category').value = dish.category;
+            document.getElementById('dish-price').value = dish.price;
+            document.getElementById('dish-description').value = dish.description || '';
+          }
+        });
+      } else {
+        document.getElementById('dishModalTitle').textContent = '添加新菜品';
+        document.getElementById('dish-name').value = '';
+        document.getElementById('dish-category').value = '';
+        document.getElementById('dish-price').value = '';
+        document.getElementById('dish-description').value = '';
+      }
+      document.getElementById('dishModal').classList.add('show');
+    }
+
+    function closeDishModal() {
+      document.getElementById('dishModal').classList.remove('show');
+      currentDishId = null;
+    }
+
+    async function saveDish() {
+      const name = document.getElementById('dish-name').value;
+      const category = document.getElementById('dish-category').value;
+      const price = document.getElementById('dish-price').value;
+      const description = document.getElementById('dish-description').value;
+
+      if (!name || !category || !price) { alert('请填写必填项'); return; }
+
+      try {
+        const method = currentDishId ? 'PATCH' : 'POST';
+        const url = currentDishId ? `/api/dishes/admin/${currentDishId}` : '/api/dishes/admin';
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, category, price: parseFloat(price), description })
+        });
+        const data = await res.json();
+        if (data.success) { alert(currentDishId ? '菜品已更新' : '菜品已创建'); closeDishModal(); loadDishes(); }
+        else { alert('保存失败: ' + data.message); }
+      } catch (error) { alert('保存失败: ' + error.message); }
+    }
+
+    async function deleteDish(dishId, dishName) {
+      if (!confirm(`确定要删除菜品 ${dishName} 吗？`)) return;
+      try {
+        const res = await fetch(`/api/dishes/admin/${dishId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { alert('菜品已删除'); loadDishes(); }
+        else { alert('删除失败: ' + data.message); }
+      } catch (error) { alert('删除失败: ' + error.message); }
+    }
+
+    async function deleteUser(userId, userName) {
+      if (!confirm(`确定要删除用户 ${userName} 吗？`)) return;
+      try {
+        const res = await fetch(`/api/users/admin/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { alert('用户已删除'); loadUsers(); }
+        else { alert('删除失败: ' + data.message); }
+      } catch (error) { alert('删除失败: ' + error.message); }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      document.getElementById('user-info').textContent = `👤 ${user.full_name || '管理员'}`;
+      loadOrders();
+    });
+
+    setInterval(loadOrders, 30000);
+  </script>
+</body>
+</html>
