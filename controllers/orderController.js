@@ -304,7 +304,8 @@ const getOrderDetailAdmin = async (req, res) => {
         c.email,
         c.address,
         c.height,
-        c.weight
+        c.weight,
+        c.additional_info
        FROM orders o
        LEFT JOIN customers c ON o.customer_id = c.id
        WHERE o.id = ?`,

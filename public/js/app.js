@@ -528,8 +528,10 @@ class App {
       phone: formData.get('phone'),
       email: formData.get('email') || null,
       password: formData.get('password'),
-      height: parseFloat(formData.get('height')) || 0,    // ← 加这行
-      weight: parseFloat(formData.get('weight')) || 0   
+      height: parseFloat(formData.get('height')) || 0,
+      weight: parseFloat(formData.get('weight')) || 0,
+      address: formData.get('address') || null,
+      additional_info: formData.get('additional_info') || null
     };
 
     // 验证
