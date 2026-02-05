@@ -202,20 +202,19 @@ class App {
       if (categoryFilter) {
         const weekRange = this.getWeekRange();
         categoryFilter.innerHTML = `
-          <div style="margin-bottom: 15px; font-size: 12px; color: #666;">📅 本周: ${weekRange}</div>
-          <button class="category-btn ${this.selectedPlan === '5' ? 'active' : ''}" data-plan="5">${this.planLabels['5']}</button>
-          <button class="category-btn ${this.selectedPlan === '10' ? 'active' : ''}" data-plan="10">${this.planLabels['10']}</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">分类</h3>
+            <div style="font-size: 14px; color: #666;">📅 本周: ${weekRange}</div>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1; padding: 15px; background: #f0f0f0; border-radius: 8px; text-align: center; color: #333; font-weight: bold;">
+              ${this.planLabels['5']}
+            </div>
+            <div style="flex: 1; padding: 15px; background: linear-gradient(135deg, #00d4aa, #00b894); border-radius: 8px; text-align: center; color: #0a0e27; font-weight: bold;">
+              ${this.planLabels['10']}
+            </div>
+          </div>
         `;
-
-        // 套餐选择事件
-        document.querySelectorAll('.category-btn[data-plan]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            document.querySelectorAll('.category-btn[data-plan]').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            this.selectedPlan = btn.dataset.plan;
-            await this.loadDishes('');
-          });
-        });
       }
 
       // 加载所有菜品
@@ -238,7 +237,33 @@ class App {
         return;
       }
 
-      container.innerHTML = dishes.map(dish => this.renderDishCard(dish)).join('');
+      // 按套餐类型分组菜品
+      const dishes5 = dishes.filter(d => d.category === '5');
+      const dishes10 = dishes.filter(d => d.category === '10');
+
+      let html = '';
+
+      // 5顿套餐菜品
+      if (dishes5.length > 0) {
+        html += `<div style="margin-bottom: 30px;">
+          <h3 style="color: #333; margin-bottom: 15px;">5顿套餐</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+            ${dishes5.map(dish => this.renderDishCard(dish)).join('')}
+          </div>
+        </div>`;
+      }
+
+      // 10顿套餐菜品
+      if (dishes10.length > 0) {
+        html += `<div>
+          <h3 style="color: #333; margin-bottom: 15px;">10顿套餐</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+            ${dishes10.map(dish => this.renderDishCard(dish)).join('')}
+          </div>
+        </div>`;
+      }
+
+      container.innerHTML = html;
 
       // 添加购物车事件
       document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
@@ -246,14 +271,15 @@ class App {
           const dishId = parseInt(btn.dataset.dishId);
           const dish = dishes.find(d => d.id === dishId);
           if (dish) {
-            // 使用套餐价格而不是菜品价格
+            // 使用菜品本身的套餐类型
+            const planType = dish.category; // '5' 或 '10'
             const dishWithPlan = {
               ...dish,
-              price: this.planPrices[this.selectedPlan],
-              plan: this.selectedPlan
+              price: this.planPrices[planType],
+              plan: planType
             };
             window.cart.addItem(dishWithPlan);
-            this.showMessage(`已将 "${dish.name}" 加入 ${this.planLabels[this.selectedPlan]} 套餐`, 'success');
+            this.showMessage(`已将 "${dish.name}" 加入购物车`, 'success');
             this.updateNavbar();
           }
         });
