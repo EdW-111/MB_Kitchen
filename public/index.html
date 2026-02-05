@@ -1,165 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delicious Kitchen 美味厨房 - 在线点餐</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <!-- 导航栏 -->
-  <nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delicious Kitchen 美味厨房 - 在线点餐</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <!-- 导航栏 -->
+    <nav>
+      <div class="container">
+        <div class="logo" id="logo">🍽️ Delicious Kitchen</div>
+        <ul class="nav-links">
+          <li><a href="#" id="menu-nav">🍜 菜单</a></li>
+          <li><a href="#" id="cart-nav">🛒 购物车</a></li>
+          <li><a href="#" id="orders-nav">📦 订单</a></li>
+        </ul>
+        <div class="auth-section"></div>
+      </div>
+    </nav>
+
+    <!-- 消息提示 -->
+    <div id="message" class="message"></div>
+
+    <!-- 主容器 -->
     <div class="container">
-      <div class="logo" id="logo">🍽️ Delicious Kitchen</div>
-      <ul class="nav-links">
-        <li><a href="#" id="menu-nav">🍜 菜单</a></li>
-        <li><a href="#" id="cart-nav">🛒 购物车</a></li>
-        <li><a href="#" id="orders-nav">📦 订单</a></li>
-      </ul>
-      <div class="auth-section"></div>
-    </div>
-  </nav>
-
-  <!-- 消息提示 -->
-  <div id="message" class="message"></div>
-
-  <!-- 主容器 -->
-  <div class="container">
-    <!-- 首页 -->
-    <div id="home-page" class="page active">
-      <div class="hero">
-        <h1>欢迎来到美味厨房 🍽️</h1>
-        <p>品尝地道美食，享受便捷外卖</p>
-        <button class="btn btn-primary" onclick="app.navigate('menu')">开始点餐</button>
-      </div>
-    </div>
-
-    <!-- 菜单页 -->
-    <div id="menu-page" class="page">
-      <h2 style="margin-bottom: 30px; color: var(--secondary-color);">📋 菜单</h2>
-      <div class="menu-container">
-        <div class="category-filter">
-          <h3>分类</h3>
-          <div id="category-filter"></div>
-        </div>
-        <div class="dishes-grid" id="dishes-container"></div>
-      </div>
-    </div>
-
-    <!-- 购物车页 -->
-    <div id="cart-page" class="page">
-      <h2 style="margin-bottom: 30px; color: var(--secondary-color);">🛒 购物车</h2>
-      <div class="cart-container">
-        <div class="cart-items">
-          <div id="cart-items-container"></div>
-        </div>
-        <div class="cart-summary">
-          <div class="summary-row">
-            <span>小计:</span>
-            <span>$0.00</span>
-          </div>
-          <button class="btn btn-primary" id="checkout-btn">
-            继续结账 →
+      <!-- 首页 -->
+      <div id="home-page" class="page active">
+        <div class="hero">
+          <h1>欢迎来到美味厨房 🍽️</h1>
+          <p>品尝地道美食，享受便捷外卖</p>
+          <button class="btn btn-primary" onclick="app.navigate('menu')">
+            开始点餐
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- 结账页 -->
-    <div id="checkout-page" class="page">
-      <h2 style="margin-bottom: 30px; color: var(--secondary-color);">💳 确认订单</h2>
-      <div class="checkout-container">
-        <div id="checkout-summary"></div>
-        
-        <div class="form-group">
-          <label for="order-note">订单备注（可选）</label>
-          <textarea id="order-note" placeholder="例如: 不要辣，多点汤..."></textarea>
+      <!-- 菜单页 -->
+      <div id="menu-page" class="page">
+        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
+          📋 菜单
+        </h2>
+        <div class="menu-container">
+          <div class="category-filter">
+            <h3>分类</h3>
+            <div id="category-filter"></div>
+          </div>
+          <div class="dishes-grid" id="dishes-container"></div>
         </div>
+      </div>
 
-        <button class="btn btn-primary" id="submit-order-btn" style="width: 100%; padding: 15px; font-size: 18px;">
-          提交订单
-        </button>
+      <!-- 购物车页 -->
+      <div id="cart-page" class="page">
+        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
+          🛒 购物车
+        </h2>
+        <div class="cart-container">
+          <div class="cart-items">
+            <div id="cart-items-container"></div>
+          </div>
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>小计:</span>
+              <span>$0.00</span>
+            </div>
+            <button class="btn btn-primary" id="checkout-btn">
+              继续结账 →
+            </button>
+          </div>
+        </div>
+      </div>
 
-        <button class="btn btn-secondary" onclick="app.navigate('cart')" style="width: 100%; margin-top: 10px;">
-          ← 返回购物车
-        </button>
+      <!-- 结账页 -->
+      <div id="checkout-page" class="page">
+        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
+          💳 确认订单
+        </h2>
+        <div class="checkout-container">
+          <div id="checkout-summary"></div>
+
+          <div class="form-group">
+            <label for="order-note">订单备注（可选）</label>
+            <textarea
+              id="order-note"
+              placeholder="例如: 不要辣，多点汤..."
+            ></textarea>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            id="submit-order-btn"
+            style="width: 100%; padding: 15px; font-size: 18px"
+          >
+            提交订单
+          </button>
+
+          <button
+            class="btn btn-secondary"
+            onclick="app.navigate('cart')"
+            style="width: 100%; margin-top: 10px"
+          >
+            ← 返回购物车
+          </button>
+        </div>
+      </div>
+
+      <!-- 订单页 -->
+      <div id="orders-page" class="page">
+        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
+          📦 我的订单
+        </h2>
+        <div class="orders-list" id="orders-container"></div>
+      </div>
+
+      <!-- 注册页 -->
+      <div id="register-page" class="page">
+        <div class="auth-form">
+          <h2>创建账户</h2>
+          <form id="register-form">
+            <div class="form-group">
+              <label for="register-name">姓名 *</label>
+              <input type="text" id="register-name" name="full_name" required />
+            </div>
+            <div class="form-group">
+              <label for="register-phone">手机号 *</label>
+              <input
+                type="tel"
+                id="register-phone"
+                name="phone"
+                placeholder="13800138000"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="register-email">邮箱（可选）</label>
+              <input
+                type="email"
+                id="register-email"
+                name="email"
+                placeholder="user@example.com"
+              />
+            </div>
+            <div class="form-group">
+              <label for="register-password">密码 *</label>
+              <input
+                type="password"
+                id="register-password"
+                name="password"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="reg-height">身高 (cm)</label>
+              <input
+                type="number"
+                id="reg-height"
+                name="height"
+                placeholder="170"
+                min="0"
+                step="0.1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-weight">体重 (kg)</label>
+              <input
+                type="number"
+                id="reg-weight"
+                name="weight"
+                placeholder="70"
+                min="0"
+                step="0.1"
+              />
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              style="width: 100%; padding: 12px"
+            >
+              注册
+            </button>
+          </form>
+          <div class="switch-auth">
+            已有账户？<button
+              onclick="app.navigate('login')"
+              style="
+                background: none;
+                border: none;
+                color: var(--primary-color);
+                text-decoration: underline;
+                cursor: pointer;
+              "
+            >
+              直接登录
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 登录页 -->
+      <div id="login-page" class="page">
+        <div class="auth-form">
+          <h2>用户登录</h2>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-phone">手机号</label>
+              <input
+                type="tel"
+                id="login-phone"
+                name="phone"
+                placeholder="13800138000"
+              />
+            </div>
+            <div class="form-group">
+              <label for="login-email">或 邮箱</label>
+              <input
+                type="email"
+                id="login-email"
+                name="email"
+                placeholder="user@example.com"
+              />
+            </div>
+            <div class="form-group">
+              <label for="login-password">密码 *</label>
+              <input
+                type="password"
+                id="login-password"
+                name="password"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              style="width: 100%; padding: 12px"
+            >
+              登录
+            </button>
+          </form>
+          <div class="switch-auth">
+            没有账户？<button
+              onclick="app.navigate('register')"
+              style="
+                background: none;
+                border: none;
+                color: var(--primary-color);
+                text-decoration: underline;
+                cursor: pointer;
+              "
+            >
+              立即注册
+            </button>
+          </div>
+          <div
+            style="
+              margin-top: 20px;
+              padding: 15px;
+              background-color: #f0f0f0;
+              border-radius: 5px;
+              font-size: 12px;
+            "
+          ></div>
+        </div>
       </div>
     </div>
 
-    <!-- 订单页 -->
-    <div id="orders-page" class="page">
-      <h2 style="margin-bottom: 30px; color: var(--secondary-color);">📦 我的订单</h2>
-      <div class="orders-list" id="orders-container"></div>
-    </div>
+    <!-- 页脚 -->
+    <footer>
+      <p>
+        &copy; 2025 Delicious Kitchen 美味厨房 | MVP v1.0 |
+        <a href="/admin/orders" style="color: white; text-decoration: underline"
+          >📊 查看所有订单</a
+        >
+      </p>
+    </footer>
 
-    <!-- 注册页 -->
-    <div id="register-page" class="page">
-      <div class="auth-form">
-        <h2>创建账户</h2>
-        <form id="register-form">
-          <div class="form-group">
-            <label for="register-name">姓名 *</label>
-            <input type="text" id="register-name" name="full_name" required>
-          </div>
-          <div class="form-group">
-            <label for="register-phone">手机号 *</label>
-            <input type="tel" id="register-phone" name="phone" placeholder="13800138000" required>
-          </div>
-          <div class="form-group">
-            <label for="register-email">邮箱（可选）</label>
-            <input type="email" id="register-email" name="email" placeholder="user@example.com">
-          </div>
-          <div class="form-group">
-            <label for="register-password">密码 *</label>
-            <input type="password" id="register-password" name="password" required>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">注册</button>
-        </form>
-        <div class="switch-auth">
-          已有账户？<button onclick="app.navigate('login')" style="background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer;">直接登录</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 登录页 -->
-    <div id="login-page" class="page">
-      <div class="auth-form">
-        <h2>用户登录</h2>
-        <form id="login-form">
-          <div class="form-group">
-            <label for="login-phone">手机号</label>
-            <input type="tel" id="login-phone" name="phone" placeholder="13800138000">
-          </div>
-          <div class="form-group">
-            <label for="login-email">或 邮箱</label>
-            <input type="email" id="login-email" name="email" placeholder="user@example.com">
-          </div>
-          <div class="form-group">
-            <label for="login-password">密码 *</label>
-            <input type="password" id="login-password" name="password" required>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">登录</button>
-        </form>
-        <div class="switch-auth">
-          没有账户？<button onclick="app.navigate('register')" style="background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer;">立即注册</button>
-        </div>
-        <div style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; font-size: 12px;">
-          <strong>测试账户：</strong><br>
-          手机：13800138000<br>
-          密码：123456
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 页脚 -->
-  <footer>
-    <p>&copy; 2025 Delicious Kitchen 美味厨房 | MVP v1.0 | <a href="/admin/orders" style="color: white; text-decoration: underline;">📊 查看所有订单</a></p>
-  </footer>
-
-  <!-- 脚本 -->
-  <script src="/js/api.js"></script>
-  <script src="/js/cart.js"></script>
-  <script src="/js/app.js"></script>
-</body>
+    <!-- 脚本 -->
+    <script src="/js/api.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
 </html>

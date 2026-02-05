@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的资料 - Delicious Kitchen</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: #0a0e27;
+      padding: 20px;
+      color: #e4e9f7;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      background: #1a2142;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      border: 1px solid #2d3561;
+    }
+
+    h1 {
+      color: #e4e9f7;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .profile-section {
+      margin-bottom: 25px;
+    }
+
+    .profile-section label {
+      display: block;
+      margin-bottom: 8px;
+      color: #e4e9f7;
+      font-weight: 600;
+    }
+
+    .profile-section input,
+    .profile-section button {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #2d3561;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .profile-section input {
+      background: #151b3d;
+      color: #e4e9f7;
+      transition: all 0.3s;
+    }
+
+    .profile-section input:focus {
+      outline: none;
+      border-color: #00d4aa;
+      box-shadow: 0 0 0 3px rgba(0,212,170,0.2);
+    }
+
+    .profile-info {
+      background: #151b3d;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #2d3561;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #2d3561;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #a0aec0;
+    }
+
+    .info-value {
+      color: #e4e9f7;
+    }
+
+    button {
+      background: linear-gradient(135deg, #00d4aa, #00b894);
+      color: #0a0e27;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,212,170,0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,212,170,0.4);
+    }
+
+    button:disabled {
+      background: #2d3561;
+      cursor: not-allowed;
+      color: #a0aec0;
+    }
+
+    .error {
+      color: #ff4757;
+      margin-bottom: 15px;
+      padding: 12px;
+      background: rgba(255,71,87,0.2);
+      border-radius: 8px;
+      border: 1px solid #ff4757;
+    }
+
+    .success {
+      color: #00d4aa;
+      margin-bottom: 15px;
+      padding: 12px;
+      background: rgba(0,212,170,0.2);
+      border-radius: 8px;
+      border: 1px solid #00d4aa;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .button-group button {
+      flex: 1;
+    }
+
+    .btn-secondary {
+      background: #2d3561;
+      color: #e4e9f7;
+      box-shadow: none;
+      border: 1px solid #2d3561;
+    }
+
+    .btn-secondary:hover {
+      background: #3d4571;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #00d4aa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .edit-form {
+      display: none;
+    }
+
+    .edit-form.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← 返回首页</a>
+
+    <h1>👤 我的资料</h1>
+
+    <div id="errorMsg" class="error" style="display:none;"></div>
+    <div id="successMsg" class="success" style="display:none;"></div>
+
+    <!-- 显示用户信息 -->
+    <div id="profileView" class="profile-info">
+      <div class="info-row">
+        <span class="info-label">姓名：</span>
+        <span class="info-value" id="displayName">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">手机：</span>
+        <span class="info-value" id="displayPhone">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">身高：</span>
+        <span class="info-value" id="displayHeight">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">体重：</span>
+        <span class="info-value" id="displayWeight">-</span>
+      </div>
+    </div>
+
+    <button onclick="toggleEditForm()">✏️ 编辑资料</button>
+
+    <!-- 编辑表单 -->
+    <form id="editForm" class="edit-form">
+      <div class="profile-section">
+        <label>姓名</label>
+        <input type="text" id="editName" required>
+      </div>
+
+      <div class="profile-section">
+        <label>身高 (cm)</label>
+        <input type="number" id="editHeight" min="0" step="0.1">
+      </div>
+
+      <div class="profile-section">
+        <label>体重 (kg)</label>
+        <input type="number" id="editWeight" min="0" step="0.1">
+      </div>
+
+      <div class="button-group">
+        <button type="submit">💾 保存</button>
+        <button type="button" class="btn-secondary" onclick="toggleEditForm()">取消</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    // 页面加载时获取用户信息
+    window.addEventListener('load', loadProfile);
+
+    async function loadProfile() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/';
+          return;
+        }
+
+        const response = await fetch('/api/auth/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUser = data.data;
+          displayProfile(currentUser);
+        } else {
+          showError(data.message || '获取用户信息失败');
+        }
+      } catch (error) {
+        console.error('获取用户信息错误:', error);
+        showError('获取用户信息失败');
+      }
+    }
+
+    function displayProfile(user) {
+      document.getElementById('displayName').textContent = user.full_name || '-';
+      document.getElementById('displayPhone').textContent = user.phone || '-';
+      document.getElementById('displayHeight').textContent = user.height ? `${user.height} cm` : '-';
+      document.getElementById('displayWeight').textContent = user.weight ? `${user.weight} kg` : '-';
+
+      // 填充编辑表单
+      document.getElementById('editName').value = user.full_name || '';
+      document.getElementById('editHeight').value = user.height || '';
+      document.getElementById('editWeight').value = user.weight || '';
+    }
+
+    function toggleEditForm() {
+      document.getElementById('editForm').classList.toggle('active');
+      document.getElementById('profileView').classList.toggle('active');
+    }
+
+    // 提交编辑表单
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/auth/profile', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            full_name: document.getElementById('editName').value,
+            height: parseFloat(document.getElementById('editHeight').value) || 0,
+            weight: parseFloat(document.getElementById('editWeight').value) || 0
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUser = data.data;
+          displayProfile(currentUser);
+          toggleEditForm();
+          showSuccess('资料已更新');
+        } else {
+          showError(data.message || '更新失败');
+        }
+      } catch (error) {
+        console.error('更新错误:', error);
+        showError('更新失败');
+      }
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>

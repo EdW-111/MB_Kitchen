@@ -99,6 +99,7 @@ const getCategories = async (req, res) => {
 const createDish = async (req, res) => {
   try {
     const { name, category, description, price } = req.body;
+    const imageUrl = req.file ? `/uploads/dishes/${req.file.filename}` : null;
 
     if (!name || !category || price === undefined) {
       return res.status(400).json({
@@ -108,20 +109,21 @@ const createDish = async (req, res) => {
     }
 
     const result = await runAsync(
-      `INSERT INTO dishes (name, category, description, price, is_available) 
-       VALUES (?, ?, ?, ?, 1)`,
-      [name, category, description || '', price]
+      `INSERT INTO dishes (name, category, description, price, image_url, is_available)
+       VALUES (?, ?, ?, ?, ?, 1)`,
+      [name, category, description || '', price, imageUrl]
     );
 
     res.json({
       success: true,
       message: '菜品已创建',
       data: {
-        id: result.lastID,
+        id: result.id,
         name,
         category,
         description: description || '',
-        price
+        price,
+        image_url: imageUrl
       }
     });
   } catch (error) {
@@ -139,6 +141,7 @@ const updateDish = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, category, description, price, is_available } = req.body;
+    const imageUrl = req.file ? `/uploads/dishes/${req.file.filename}` : undefined;
 
     const dish = await getAsync('SELECT * FROM dishes WHERE id = ?', [id]);
     if (!dish) {
@@ -148,14 +151,17 @@ const updateDish = async (req, res) => {
       });
     }
 
+    const finalImageUrl = imageUrl !== undefined ? imageUrl : dish.image_url;
+
     await runAsync(
-      `UPDATE dishes SET name = ?, category = ?, description = ?, price = ?, is_available = ? WHERE id = ?`,
+      `UPDATE dishes SET name = ?, category = ?, description = ?, price = ?, is_available = ?, image_url = ? WHERE id = ?`,
       [
         name || dish.name,
         category || dish.category,
         description !== undefined ? description : dish.description,
         price !== undefined ? price : dish.price,
         is_available !== undefined ? is_available : dish.is_available,
+        finalImageUrl,
         id
       ]
     );
@@ -167,7 +173,8 @@ const updateDish = async (req, res) => {
         id,
         name: name || dish.name,
         category: category || dish.category,
-        price: price !== undefined ? price : dish.price
+        price: price !== undefined ? price : dish.price,
+        image_url: finalImageUrl
       }
     });
   } catch (error) {

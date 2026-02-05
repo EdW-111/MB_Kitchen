@@ -7,74 +7,75 @@
   <link rel="stylesheet" href="/css/style.css">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #0a0e27; color: #e4e9f7; }
     .admin-wrapper { display: flex; height: 100vh; }
-    .sidebar { width: 250px; background: var(--secondary-color); color: white; padding: 20px; overflow-y: auto; }
+    .sidebar { width: 250px; background: #151b3d; color: white; padding: 20px; overflow-y: auto; border-right: 1px solid #2d3561; }
     .sidebar h2 { margin: 0 0 30px 0; font-size: 20px; }
-    .nav-item { padding: 15px 20px; cursor: pointer; border-radius: 5px; margin-bottom: 10px; transition: all 0.3s; }
-    .nav-item:hover { background: rgba(255,255,255,0.2); }
-    .nav-item.active { background: var(--primary-color); }
-    .content { flex: 1; overflow-y: auto; }
-    .admin-header { background: var(--light-gray); padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .admin-title { margin: 0; color: var(--secondary-color); }
-    .logout-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    .nav-item { padding: 15px 20px; cursor: pointer; border-radius: 8px; margin-bottom: 10px; transition: all 0.3s; color: #a0aec0; font-weight: 500; }
+    .nav-item:hover { background: rgba(0,212,170,0.1); color: #00d4aa; }
+    .nav-item.active { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; }
+    .content { flex: 1; overflow-y: auto; background: #0a0e27; }
+    .admin-header { background: #151b3d; padding: 20px; border-bottom: 1px solid #2d3561; display: flex; justify-content: space-between; align-items: center; }
+    .admin-title { margin: 0; color: #e4e9f7; }
+    .logout-btn { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
     .panel { display: none; padding: 20px; }
     .panel.active { display: block; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .stat-label { color: #666; font-size: 14px; margin-bottom: 10px; }
-    .stat-value { font-size: 32px; font-weight: bold; color: var(--primary-color); }
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 10px; }
-    th { background: var(--light-gray); padding: 15px; text-align: left; font-weight: bold; color: var(--secondary-color); border-bottom: 2px solid var(--border-color); }
-    td { padding: 15px; border-bottom: 1px solid var(--border-color); }
-    tr:hover { background: var(--light-gray); }
+    .stat-card { background: #1a2142; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #2d3561; }
+    .stat-label { color: #a0aec0; font-size: 14px; margin-bottom: 10px; }
+    .stat-value { font-size: 32px; font-weight: bold; color: #00d4aa; }
+    table { width: 100%; border-collapse: collapse; background: #1a2142; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid #2d3561; }
+    th { background: #151b3d; padding: 15px; text-align: left; font-weight: bold; color: #e4e9f7; border-bottom: 2px solid #2d3561; }
+    td { padding: 15px; border-bottom: 1px solid #2d3561; color: #a0aec0; }
+    tr:hover { background: #151b3d; }
     .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.3s; }
-    .btn-primary { background: var(--primary-color); color: white; }
-    .btn-primary:hover { background: #e55a28; }
-    .btn-danger { background: #dc3545; color: white; }
-    .btn-danger:hover { background: #b91f1f; }
-    .btn-secondary { background: #6c757d; color: white; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.3s; font-weight: 500; }
+    .btn-primary { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; box-shadow: 0 2px 8px rgba(0,212,170,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,212,170,0.4); }
+    .btn-danger { background: #ff4757; color: white; box-shadow: 0 2px 8px rgba(255,71,87,0.3); }
+    .btn-danger:hover { background: #ff3838; transform: translateY(-2px); }
+    .btn-secondary { background: #2d3561; color: #e4e9f7; border: 1px solid #2d3561; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
     .modal.show { display: flex; }
-    .modal-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
-    .modal-header { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: var(--secondary-color); }
+    .modal-content { background: #1a2142; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 1px solid #2d3561; }
+    .modal-header { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #e4e9f7; }
     .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--secondary-color); }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #e4e9f7; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #2d3561; border-radius: 8px; font-size: 14px; background: #151b3d; color: #e4e9f7; }
     .form-group textarea { resize: vertical; }
     .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    .modal-footer button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-    .btn-save { background: var(--primary-color); color: white; }
-    .btn-save:hover { background: #e55a28; }
-    .btn-cancel { background: var(--light-gray); color: var(--dark-gray); }
-    .refresh-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-bottom: 20px; }
-    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
-    .badge-submitted { background: #ffeaa7; color: #d63031; }
-    .badge-accepted { background: #81ecec; color: #0984e3; }
-    .badge-completed { background: #a8e6cf; color: #06a77d; }
-    .badge-cancelled { background: #fab1a0; color: #c92a2a; }
+    .modal-footer button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-save { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; }
+    .btn-save:hover { transform: translateY(-2px); }
+    .btn-cancel { background: #2d3561; color: #e4e9f7; }
+    .refresh-btn { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 20px; font-weight: 600; }
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid; }
+    .badge-submitted { background: rgba(255,193,7,0.2); color: #ffc107; border-color: #ffc107; }
+    .badge-accepted { background: rgba(3,169,244,0.2); color: #03a9f4; border-color: #03a9f4; }
+    .badge-completed { background: rgba(0,212,170,0.2); color: #00d4aa; border-color: #00d4aa; }
+    .badge-cancelled { background: rgba(255,71,87,0.2); color: #ff4757; border-color: #ff4757; }
     .search-box { margin-bottom: 20px; }
-    .search-box input { padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; width: 300px; font-size: 14px; }
+    .search-box input { padding: 12px; border: 1px solid #2d3561; border-radius: 8px; width: 300px; font-size: 14px; background: #151b3d; color: #e4e9f7; }
     .status-option {
       padding: 12px;
-      border: 2px solid var(--border-color);
-      border-radius: 5px;
+      border: 2px solid #2d3561;
+      border-radius: 8px;
       cursor: pointer;
       text-align: center;
       transition: all 0.3s;
-      background: white;
-      color: var(--secondary-color);
-      font-weight: bold;
+      background: #151b3d;
+      color: #a0aec0;
+      font-weight: 600;
     }
     .status-option:hover {
-      border-color: var(--primary-color);
-      background: rgba(255, 107, 53, 0.1);
+      border-color: #00d4aa;
+      background: rgba(0,212,170,0.1);
+      color: #00d4aa;
     }
     .status-option.selected {
-      border-color: var(--primary-color);
-      background: var(--primary-color);
-      color: white;
+      border-color: #00d4aa;
+      background: linear-gradient(135deg, #00d4aa, #00b894);
+      color: #0a0e27;
     }
     .status-grid {
       display: grid;
@@ -82,10 +83,122 @@
       gap: 10px;
       margin-bottom: 20px;
     }
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0a0e27 0%, #151b3d 100%);
+    }
+    .login-box {
+      background: #1a2142;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      border: 1px solid #2d3561;
+      max-width: 400px;
+      width: 100%;
+    }
+    .login-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e4e9f7;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .login-form .form-group {
+      margin-bottom: 20px;
+    }
+    .login-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #e4e9f7;
+    }
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #2d3561;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #151b3d;
+      color: #e4e9f7;
+    }
+    .login-form input:focus {
+      outline: none;
+      border-color: #00d4aa;
+      box-shadow: 0 0 8px rgba(0,212,170,0.3);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #00d4aa, #00b894);
+      color: #0a0e27;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,212,170,0.4);
+    }
+    .image-preview {
+      max-width: 150px;
+      max-height: 150px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #2d3561;
+    }
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    .file-input-wrapper input[type=file] {
+      display: none;
+    }
+    .file-input-label {
+      display: block;
+      padding: 12px;
+      background: #151b3d;
+      border: 1px dashed #2d3561;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      color: #a0aec0;
+      transition: all 0.3s;
+    }
+    .file-input-label:hover {
+      border-color: #00d4aa;
+      color: #00d4aa;
+      background: rgba(0,212,170,0.05);
+    }
   </style>
 </head>
 <body>
-  <div class="admin-wrapper">
+  <!-- 登陆界面 -->
+  <div id="login-container" class="login-container">
+    <div class="login-box">
+      <div class="login-title">🍽️ 管理员登录</div>
+      <div class="login-form">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="admin-username" placeholder="输入用户名">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="admin-password" placeholder="输入密码" onkeypress="if(event.key==='Enter') adminLogin()">
+        </div>
+        <button class="login-btn" onclick="adminLogin()">登 录</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-wrapper" class="admin-wrapper" style="display: none;">
     <!-- 左侧导航 -->
     <div class="sidebar">
       <h2>🍽️ 管理面板</h2>
@@ -93,7 +206,7 @@
       <div class="nav-item" onclick="switchPanel('dishes')">🍜 菜单管理</div>
       <div class="nav-item" onclick="switchPanel('users')">👥 用户管理</div>
       <hr style="margin-top: 40px; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
-      <button class="logout-btn" style="width: 100%; margin-top: 20px;" onclick="logout()">🚪 退出登录</button>
+      <button class="logout-btn" style="width: 100%; margin-top: 20px;" onclick="adminLogout()">🚪 退出登录</button>
     </div>
 
     <!-- 右侧内容 -->
@@ -131,6 +244,7 @@
         <table id="dishes-table">
           <thead>
             <tr>
+              <th>图片</th>
               <th>菜名</th>
               <th>分类</th>
               <th>描述</th>
@@ -140,36 +254,34 @@
             </tr>
           </thead>
           <tbody id="dishes-tbody">
-            <tr><td colspan="6" style="text-align: center;">加载中...</td></tr>
+            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
           </tbody>
         </table>
       </div>
 
       <!-- 用户管理面板 -->
-      <div id="users-panel" class="panel" style="padding: 20px;">
-        <div class="search-box">
-          <input type="text" id="user-search" placeholder="搜索用户名或手机号..." onkeyup="filterUsers()">
-        </div>
-        <button class="refresh-btn" onclick="loadUsers()">🔄 刷新用户</button>
-        <table id="users-table">
-          <thead>
-            <tr>
-              <th>用户名</th>
-              <th>手机号</th>
-              <th>地址</th>
-              <th>订单数</th>
-              <th>总消费</th>
-              <th>注册时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="users-tbody">
-            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
-          </tbody>
-        </table>
+      <!-- 用户管理面板 -->
+    <div id="users-panel" class="panel" style="padding: 20px;">
+      <div class="search-box">
+        <input type="text" id="user-search" placeholder="搜索用户名或手机号..." onkeyup="filterUsers()">
       </div>
+      <button class="refresh-btn" onclick="loadUsers()">🔄 刷新用户</button>
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>手机号</th>
+            <th>身高 (cm)</th>
+            <th>体重 (kg)</th>
+            <th>订单数</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="6" style="text-align: center;">加载中...</td></tr>
+        </tbody>
+      </table>
     </div>
-  </div>
 
   <!-- 订单状态编辑模态框 -->
   <div class="modal" id="orderStatusModal">
@@ -210,6 +322,16 @@
       <div class="form-group">
         <label>价格 *</label>
         <input type="number" id="dish-price" placeholder="输入价格" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>菜品照片</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="dish-image" accept="image/*">
+          <label for="dish-image" class="file-input-label">
+            📸 点击选择图片或拖拽上传
+          </label>
+        </div>
+        <img id="dish-image-preview" class="image-preview" style="display: none;">
       </div>
       <div class="form-group">
         <label>描述</label>
@@ -292,9 +414,12 @@
         const dishes = data.data || [];
         const tbody = document.getElementById('dishes-tbody');
 
-        if (dishes.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">暂无菜品</td></tr>'; return; }
+        if (dishes.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">暂无菜品</td></tr>'; return; }
         tbody.innerHTML = dishes.map(dish => `
           <tr>
+            <td>
+              ${dish.image_url ? `<img src="${dish.image_url}" alt="${dish.name}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;">` : '-'}
+            </td>
             <td><strong>${dish.name}</strong></td>
             <td>${categoryLabels[dish.category] || dish.category}</td>
             <td>${dish.description || '-'}</td>
@@ -310,13 +435,29 @@
     }
 
     async function loadUsers() {
-      try {
-        const res = await fetch('/api/users/admin/all');
-        const data = await res.json();
-        allUsers = data.data || [];
-        displayUsers(allUsers);
-      } catch (error) { alert('加载用户失败: ' + error.message); }
+  try {
+    const response = await fetch('/api/users/admin/all');
+    const data = await response.json();
+    
+    if (data.success) {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = data.data.map(user => `
+        <tr>
+          <td>${user.full_name}</td>
+          <td>${user.phone}</td>
+          <td>${user.height || '-'}</td>
+          <td>${user.weight || '-'}</td>
+          <td>${user.order_count || 0}</td>
+          <td>
+            <button onclick="deleteUser(${user.id})" class="btn btn-danger btn-sm">删除</button>
+          </td>
+        </tr>
+      `).join('');
     }
+  } catch (error) {
+    console.error('加载用户失败:', error);
+  }
+}
 
     function displayUsers(users) {
       const tbody = document.getElementById('users-tbody');
@@ -385,6 +526,9 @@
 
     function openDishModal(dishId) {
       currentDishId = dishId;
+      const imageInput = document.getElementById('dish-image');
+      const imagePreview = document.getElementById('dish-image-preview');
+
       if (dishId) {
         document.getElementById('dishModalTitle').textContent = '编辑菜品';
         fetch(`/api/dishes/${dishId}`).then(r => r.json()).then(data => {
@@ -394,6 +538,18 @@
             document.getElementById('dish-category').value = dish.category;
             document.getElementById('dish-price').value = dish.price;
             document.getElementById('dish-description').value = dish.description || '';
+
+            // 显示现有图片
+            if (dish.image_url) {
+              imagePreview.src = dish.image_url;
+              imagePreview.style.display = 'block';
+            } else {
+              imagePreview.style.display = 'none';
+            }
+
+            if (imageInput) {
+              imageInput.value = '';
+            }
           }
         });
       } else {
@@ -402,6 +558,11 @@
         document.getElementById('dish-category').value = '';
         document.getElementById('dish-price').value = '';
         document.getElementById('dish-description').value = '';
+        imagePreview.style.display = 'none';
+
+        if (imageInput) {
+          imageInput.value = '';
+        }
       }
       document.getElementById('dishModal').classList.add('show');
     }
@@ -409,6 +570,14 @@
     function closeDishModal() {
       document.getElementById('dishModal').classList.remove('show');
       currentDishId = null;
+      const imageInput = document.getElementById('dish-image');
+      const imagePreview = document.getElementById('dish-image-preview');
+      if (imageInput) {
+        imageInput.value = '';
+      }
+      if (imagePreview) {
+        imagePreview.style.display = 'none';
+      }
     }
 
     async function saveDish() {
@@ -416,21 +585,39 @@
       const category = document.getElementById('dish-category').value;
       const price = document.getElementById('dish-price').value;
       const description = document.getElementById('dish-description').value;
+      const imageInput = document.getElementById('dish-image');
 
       if (!name || !category || !price) { alert('请填写必填项'); return; }
 
       try {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('category', category);
+        formData.append('price', parseFloat(price));
+        formData.append('description', description);
+
+        if (imageInput && imageInput.files && imageInput.files[0]) {
+          formData.append('image', imageInput.files[0]);
+        }
+
         const method = currentDishId ? 'PATCH' : 'POST';
         const url = currentDishId ? `/api/dishes/admin/${currentDishId}` : '/api/dishes/admin';
         const res = await fetch(url, {
           method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, category, price: parseFloat(price), description })
+          body: formData,
+          credentials: 'include'
         });
         const data = await res.json();
-        if (data.success) { alert(currentDishId ? '菜品已更新' : '菜品已创建'); closeDishModal(); loadDishes(); }
-        else { alert('保存失败: ' + data.message); }
-      } catch (error) { alert('保存失败: ' + error.message); }
+        if (data.success) {
+          alert(currentDishId ? '菜品已更新' : '菜品已创建');
+          closeDishModal();
+          loadDishes();
+        } else {
+          alert('保存失败: ' + data.message);
+        }
+      } catch (error) {
+        alert('保存失败: ' + error.message);
+      }
     }
 
     async function deleteDish(dishId, dishName) {
@@ -464,12 +651,103 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      document.getElementById('user-info').textContent = `👤 ${user.full_name || '管理员'}`;
-      loadOrders();
+      checkAdminAuth();
+      setupImageUploadHandler();
     });
 
-    setInterval(loadOrders, 30000);
+    function checkAdminAuth() {
+      // 检查管理员是否已登陆（通过 cookie）
+      // 如果没有登陆，显示登陆表单；如果已登陆，显示管理面板
+      fetch('/api/auth/admin/check', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('admin-wrapper').style.display = 'flex';
+            loadOrders();
+            setInterval(loadOrders, 30000);
+          } else {
+            showLoginForm();
+          }
+        })
+        .catch(() => showLoginForm());
+    }
+
+    function showLoginForm() {
+      document.getElementById('login-container').style.display = 'flex';
+      document.getElementById('admin-wrapper').style.display = 'none';
+    }
+
+    async function adminLogin() {
+      const username = document.getElementById('admin-username').value;
+      const password = document.getElementById('admin-password').value;
+
+      if (!username || !password) {
+        alert('请输入用户名和密码');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('admin-username').value = '';
+          document.getElementById('admin-password').value = '';
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('admin-wrapper').style.display = 'flex';
+          loadOrders();
+          setInterval(loadOrders, 30000);
+        } else {
+          alert(data.message || '登陆失败');
+        }
+      } catch (error) {
+        alert('登陆失败: ' + error.message);
+      }
+    }
+
+    async function adminLogout() {
+      try {
+        await fetch('/api/auth/admin/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        document.getElementById('admin-wrapper').style.display = 'none';
+        document.getElementById('login-container').style.display = 'flex';
+        document.getElementById('admin-username').value = '';
+        document.getElementById('admin-password').value = '';
+      } catch (error) {
+        alert('登出失败: ' + error.message);
+      }
+    }
+
+    function logout() {
+      adminLogout();
+    }
+
+    function setupImageUploadHandler() {
+      const imageInput = document.getElementById('dish-image');
+      const imagePreview = document.getElementById('dish-image-preview');
+
+      if (imageInput) {
+        imageInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              imagePreview.src = event.target.result;
+              imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    }
   </script>
 </body>
 </html>

@@ -509,7 +509,9 @@ class App {
       full_name: formData.get('full_name'),
       phone: formData.get('phone'),
       email: formData.get('email') || null,
-      password: formData.get('password')
+      password: formData.get('password'),
+      height: parseFloat(formData.get('height')) || 0,    // ← 加这行
+      weight: parseFloat(formData.get('weight')) || 0   
     };
 
     // 验证
@@ -521,8 +523,6 @@ class App {
     try {
       const res = await window.api.auth.register(data);
       if (res.success) {
-        window.api.setToken(res.token);
-        this.currentUser = res.user;
         this.showMessage('注册成功！', 'success');
         setTimeout(() => this.navigate('menu'), 1000);
       }

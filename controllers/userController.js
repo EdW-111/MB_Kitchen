@@ -4,25 +4,23 @@ const { getAsync, allAsync, runAsync } = require('../config/db');
 const getAllUsers = async (req, res) => {
   try {
     const users = await allAsync(
-      `SELECT id, phone, full_name,
-        (SELECT COUNT(*) FROM orders WHERE customer_id = customers.id) as order_count,
-        (SELECT SUM(oi.quantity * oi.unit_price_snapshot) 
-        FROM order_items oi
-        JOIN orders o ON oi.order_id = o.id
-        WHERE o.customer_id = customers.id) as total_spent
-      FROM customers
-      order by id DESC`,
-      
+      `SELECT 
+        id,
+        phone,
+        full_name,
+        height,
+        weight,
+        (SELECT COUNT(*) FROM orders WHERE customer_id = customers.id) as order_count
+       FROM customers
+       ORDER BY id DESC`,
+      []
     );
 
     res.json({
       success: true,
       data: users.map(user => ({
         ...user,
-        address: '-',
-        created_at: new Date().toISOString(),
-        order_count: user.order_count || 0,
-        total_spent: user.total_spent || 0
+        order_count: user.order_count || 0
       }))
     });
   } catch (error) {
