@@ -315,13 +315,11 @@
         <input type="text" id="dish-name" placeholder="输入菜名">
       </div>
       <div class="form-group">
-        <label>分类 *</label>
+        <label>套餐类型 *</label>
         <select id="dish-category">
-          <option value="">选择分类</option>
-          <option value="main">主食</option>
-          <option value="snack">小食</option>
-          <option value="drink">饮品</option>
-          <option value="dessert">甜品</option>
+          <option value="">选择套餐</option>
+          <option value="5">5顿 $69.95（13.99/顿）</option>
+          <option value="10">10顿 $119.90（11.9/顿）</option>
         </select>
       </div>
       <div class="form-group" style="background: #151b3d; padding: 12px; border-radius: 8px; border-left: 3px solid #ffc107;">
@@ -376,7 +374,7 @@
 
   <script>
     const statusLabels = { submitted: '已提交', accepted: '已接受', completed: '已完成', cancelled: '已取消' };
-    const categoryLabels = { main: '主食', snack: '小食', drink: '饮品', dessert: '甜品' };
+    const categoryLabels = { '5': '5顿套餐', '10': '10顿套餐' };
     let currentOrderId = null;
     let currentDishId = null;
     let selectedStatus = null;

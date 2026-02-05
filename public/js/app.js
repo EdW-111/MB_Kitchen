@@ -265,10 +265,8 @@ class App {
 
   renderDishCard(dish) {
     const categoryLabels = {
-      main: '主食',
-      snack: '小食',
-      drink: '饮品',
-      dessert: '甜品'
+      '5': '5顿套餐',
+      '10': '10顿套餐'
     };
 
     const imageContent = dish.image_url
@@ -350,9 +348,9 @@ class App {
     if (summaryContainer) {
       const summaryHTML = summaryContainer.innerHTML;
       summaryContainer.innerHTML = `
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 10px 0;">套餐统计</h4>
-          ${planSummary}
+        <div style="background: linear-gradient(135deg, #00d4aa, #00b894); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #0a0e27;">
+          <h4 style="margin: 0 0 10px 0; font-weight: bold; color: #0a0e27;">套餐统计</h4>
+          <div style="color: #0a0e27;">${planSummary}</div>
         </div>
         <div class="summary-row">
           <span>小计:</span>
