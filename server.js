@@ -16,10 +16,33 @@ const { db, runAsync } = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 检查表是否存在
+const tableExists = (tableName) => {
+  return new Promise((resolve) => {
+    db.get(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
+      [tableName],
+      (err, row) => {
+        resolve(!err && !!row);
+      }
+    );
+  });
+};
+
 // 初始化数据库表结构（如果不存在）
 const initDatabase = async () => {
   try {
-    console.log(`📁 Using database at: ${process.env.DATABASE_PATH || './database.db'}`);
+    const dbPath = process.env.DATABASE_PATH || './database.db';
+    console.log(`📁 Using database at: ${dbPath}`);
+
+    // 检查表是否已存在
+    const customersExists = await tableExists('customers');
+    if (customersExists) {
+      console.log('✅ Database tables already exist - skipping recreation');
+      return;
+    }
+
+    console.log('🔧 Creating database tables...');
 
     // 顾客表
     await runAsync(`
