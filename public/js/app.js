@@ -231,9 +231,13 @@ class App {
       dessert: '甜品'
     };
 
+    const imageContent = dish.image_url
+      ? `<img src="${dish.image_url}" alt="${dish.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+      : '<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 48px;">🍽️</div>';
+
     return `
       <div class="dish-card">
-        <div class="dish-image">🍽️</div>
+        <div class="dish-image">${imageContent}</div>
         <div class="dish-info">
           <div class="dish-name">${dish.name}</div>
           <div class="dish-category">${categoryLabels[dish.category] || dish.category}</div>

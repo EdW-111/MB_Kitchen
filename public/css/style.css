@@ -250,6 +250,7 @@ nav .user-info {
   justify-content: center;
   color: white;
   font-size: 48px;
+  overflow: hidden;
 }
 
 .dish-info {
