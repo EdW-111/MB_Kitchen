@@ -196,7 +196,7 @@ const getCurrentUser = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const user = await getAsync(
-      'SELECT id, full_name, phone, email, height, weight FROM customers WHERE id = ?',
+      'SELECT id, full_name, phone, email, height, weight, address FROM customers WHERE id = ?',
       [req.userId]
     );
 
@@ -225,7 +225,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.userId;
-    const { full_name, height, weight } = req.body;
+    const { full_name, height, weight, address } = req.body;
 
     const user = await getAsync('SELECT * FROM customers WHERE id = ?', [userId]);
     if (!user) {
@@ -237,12 +237,13 @@ const updateProfile = async (req, res) => {
 
     await runAsync(
       `UPDATE customers
-       SET full_name = ?, height = ?, weight = ?
+       SET full_name = ?, height = ?, weight = ?, address = ?
        WHERE id = ?`,
       [
         full_name || user.full_name,
         height !== undefined ? height : user.height,
         weight !== undefined ? weight : user.weight,
+        address !== undefined ? address : user.address,
         userId
       ]
     );
@@ -256,7 +257,8 @@ const updateProfile = async (req, res) => {
         phone: user.phone,
         email: user.email,
         height: height !== undefined ? height : user.height,
-        weight: weight !== undefined ? weight : user.weight
+        weight: weight !== undefined ? weight : user.weight,
+        address: address !== undefined ? address : user.address
       }
     });
   } catch (error) {

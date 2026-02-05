@@ -76,9 +76,9 @@ const createOrder = async (req, res) => {
 
     // 创建订单
     const orderResult = await runAsync(
-      `INSERT INTO orders (order_number, customer_id, status, note)
-       VALUES (?, ?, ?, ?)`,
-      [orderNumber, customerId, 'submitted', note || null]
+      `INSERT INTO orders (order_number, customer_id, status, note, total_price)
+       VALUES (?, ?, ?, ?, ?)`,
+      [orderNumber, customerId, 'submitted', note || null, totalPrice]
     );
 
     const orderId = orderResult.id;
@@ -206,11 +206,11 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// 查看所有订单（餐厅管理员）- 可选，仅用于演示
+// 查看所有订单（餐厅管理员）
 const getAllOrders = async (req, res) => {
   try {
     const orders = await allAsync(
-      `SELECT 
+      `SELECT
         o.id,
         o.order_number,
         c.full_name as customer_name,
@@ -218,9 +218,11 @@ const getAllOrders = async (req, res) => {
         o.status,
         o.note,
         o.created_at,
-        (SELECT SUM(quantity * unit_price_snapshot) 
-         FROM order_items WHERE order_id = o.id) as total_price,
-        (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count
+        o.total_price,
+        (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count,
+        (SELECT GROUP_CONCAT(d.name, ', ') FROM order_items oi
+         LEFT JOIN dishes d ON oi.dish_id = d.id
+         WHERE oi.order_id = o.id) as items_display
        FROM orders o
        LEFT JOIN customers c ON o.customer_id = c.id
        ORDER BY o.created_at DESC`,
@@ -281,6 +283,75 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// 获取订单详情（管理员）
+const getOrderDetailAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 获取订单和客户信息
+    const order = await getAsync(
+      `SELECT
+        o.id,
+        o.order_number,
+        o.status,
+        o.note,
+        o.total_price,
+        o.created_at,
+        o.updated_at,
+        c.id as customer_id,
+        c.full_name,
+        c.phone,
+        c.email,
+        c.address,
+        c.height,
+        c.weight
+       FROM orders o
+       LEFT JOIN customers c ON o.customer_id = c.id
+       WHERE o.id = ?`,
+      [id]
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: '订单不存在'
+      });
+    }
+
+    // 获取订单项（产品详情）
+    const items = await allAsync(
+      `SELECT
+        oi.id,
+        oi.dish_id,
+        d.name as dish_name,
+        d.category,
+        d.image_url,
+        oi.quantity,
+        oi.unit_price_snapshot,
+        (oi.quantity * oi.unit_price_snapshot) as subtotal
+       FROM order_items oi
+       LEFT JOIN dishes d ON oi.dish_id = d.id
+       WHERE oi.order_id = ?`,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        ...order,
+        items
+      }
+    });
+  } catch (error) {
+    console.error('Get order detail error:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取订单详情失败',
+      error: error.message
+    });
+  }
+};
+
 // 删除订单（管理员）
 const deleteOrder = async (req, res) => {
   try {
@@ -310,5 +381,6 @@ module.exports = {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
+  getOrderDetailAdmin,
   deleteOrder
 };

@@ -205,6 +205,10 @@
         <span class="info-label">体重：</span>
         <span class="info-value" id="displayWeight">-</span>
       </div>
+      <div class="info-row">
+        <span class="info-label">地址：</span>
+        <span class="info-value" id="displayAddress">-</span>
+      </div>
     </div>
 
     <button onclick="toggleEditForm()">✏️ 编辑资料</button>
@@ -224,6 +228,11 @@
       <div class="profile-section">
         <label>体重 (kg)</label>
         <input type="number" id="editWeight" min="0" step="0.1">
+      </div>
+
+      <div class="profile-section">
+        <label>地址</label>
+        <input type="text" id="editAddress" placeholder="请输入您的收货地址">
       </div>
 
       <div class="button-group">
@@ -269,11 +278,13 @@
       document.getElementById('displayPhone').textContent = user.phone || '-';
       document.getElementById('displayHeight').textContent = user.height ? `${user.height} cm` : '-';
       document.getElementById('displayWeight').textContent = user.weight ? `${user.weight} kg` : '-';
+      document.getElementById('displayAddress').textContent = user.address || '-';
 
       // 填充编辑表单
       document.getElementById('editName').value = user.full_name || '';
       document.getElementById('editHeight').value = user.height || '';
       document.getElementById('editWeight').value = user.weight || '';
+      document.getElementById('editAddress').value = user.address || '';
     }
 
     function toggleEditForm() {
@@ -296,7 +307,8 @@
           body: JSON.stringify({
             full_name: document.getElementById('editName').value,
             height: parseFloat(document.getElementById('editHeight').value) || 0,
-            weight: parseFloat(document.getElementById('editWeight').value) || 0
+            weight: parseFloat(document.getElementById('editWeight').value) || 0,
+            address: document.getElementById('editAddress').value
           })
         });
 

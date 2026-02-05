@@ -14,6 +14,7 @@ const initDatabase = async () => {
         password_hash TEXT NOT NULL,
         height INTEGER DEFAULT 0,
         weight INTEGER DEFAULT 0,
+        address TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -44,6 +45,7 @@ const initDatabase = async () => {
         customer_id INTEGER NOT NULL,
         status TEXT DEFAULT 'submitted',
         note TEXT,
+        total_price REAL DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE

@@ -226,6 +226,7 @@
               <th>订单号</th>
               <th>顾客</th>
               <th>手机号</th>
+              <th>产品</th>
               <th>状态</th>
               <th>金额</th>
               <th>时间</th>
@@ -233,7 +234,7 @@
             </tr>
           </thead>
           <tbody id="orders-tbody">
-            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
+            <tr><td colspan="8" style="text-align: center;">加载中...</td></tr>
           </tbody>
         </table>
       </div>
@@ -344,6 +345,17 @@
     </div>
   </div>
 
+  <!-- 订单详情模态框 -->
+  <div class="modal" id="orderDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">订单详情</div>
+      <div id="orderDetailContent" style="max-height: 70vh; overflow-y: auto;"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('orderDetailModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const statusLabels = { submitted: '已提交', accepted: '已接受', completed: '已完成', cancelled: '已取消' };
     const categoryLabels = { main: '主食', snack: '小食', drink: '饮品', dessert: '甜品' };
@@ -389,18 +401,20 @@
           <div class="stat-card"><div class="stat-label">总营收</div><div class="stat-value">$${stats.totalAmount.toFixed(2)}</div></div>
         `;
 
-        if (orders.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">暂无订单</td></tr>'; return; }
+        if (orders.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">暂无订单</td></tr>'; return; }
         tbody.innerHTML = orders.map(order => `
           <tr>
             <td><strong>${order.order_number}</strong></td>
             <td>${order.customer_name || '未知'}</td>
             <td>${order.phone || '-'}</td>
+            <td>${order.items_display || '-'}</td>
             <td><span class="badge badge-${order.status}">${statusLabels[order.status]}</span></td>
             <td>$${(order.total_price || 0).toFixed(2)}</td>
             <td>${new Date(order.created_at).toLocaleDateString('zh-CN')}</td>
             <td><div class="action-buttons">
-              <button class="btn btn-primary" onclick="openOrderStatusModal(${order.id}, '${order.status}')">修改状态</button>
-              <button class="btn btn-danger" onclick="deleteOrder(${order.id}, '${order.order_number}')">删除</button>
+              <button class="btn btn-primary btn-sm" onclick="viewOrderDetail(${order.id})">查看详情</button>
+              <button class="btn btn-secondary btn-sm" onclick="openOrderStatusModal(${order.id}, '${order.status}')">修改状态</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id}, '${order.order_number}')">删除</button>
             </div></td>
           </tr>
         `).join('');
@@ -758,6 +772,60 @@
             reader.readAsDataURL(file);
           }
         });
+      }
+    }
+
+    async function viewOrderDetail(orderId) {
+      try {
+        const res = await fetch(`/api/orders/admin/${orderId}`, { credentials: 'include' });
+        const data = await res.json();
+
+        if (data.success) {
+          const order = data.data;
+          const itemsHtml = order.items.map(item => `
+            <div style="padding: 10px; background: #151b3d; border-radius: 8px; margin-bottom: 10px; border: 1px solid #2d3561;">
+              <div><strong>${item.dish_name}</strong> x${item.quantity}</div>
+              <div style="color: #a0aec0; font-size: 12px;">单价: $${item.unit_price_snapshot.toFixed(2)} | 小计: $${item.subtotal.toFixed(2)}</div>
+            </div>
+          `).join('');
+
+          const content = `
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #00d4aa; margin-bottom: 15px;">订单信息</h3>
+              <div style="background: #151b3d; padding: 15px; border-radius: 8px; border: 1px solid #2d3561;">
+                <div style="margin-bottom: 10px;"><strong>订单号:</strong> ${order.order_number}</div>
+                <div style="margin-bottom: 10px;"><strong>状态:</strong> <span class="badge badge-${order.status}">${statusLabels[order.status]}</span></div>
+                <div style="margin-bottom: 10px;"><strong>下单时间:</strong> ${new Date(order.created_at).toLocaleString('zh-CN')}</div>
+                <div style="margin-bottom: 10px;"><strong>总金额:</strong> $${order.total_price.toFixed(2)}</div>
+                <div style="margin-bottom: 10px;"><strong>备注:</strong> ${order.note || '-'}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h3 style="color: #00d4aa; margin-bottom: 15px;">顾客信息</h3>
+              <div style="background: #151b3d; padding: 15px; border-radius: 8px; border: 1px solid #2d3561;">
+                <div style="margin-bottom: 10px;"><strong>姓名:</strong> ${order.full_name}</div>
+                <div style="margin-bottom: 10px;"><strong>手机号:</strong> ${order.phone}</div>
+                <div style="margin-bottom: 10px;"><strong>邮箱:</strong> ${order.email || '-'}</div>
+                <div style="margin-bottom: 10px;"><strong>地址:</strong> ${order.address || '-'}</div>
+                <div style="margin-bottom: 10px;"><strong>身高:</strong> ${order.height ? order.height + ' cm' : '-'}</div>
+                <div style="margin-bottom: 10px;"><strong>体重:</strong> ${order.weight ? order.weight + ' kg' : '-'}</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="color: #00d4aa; margin-bottom: 15px;">订单产品 (${order.items.length}件)</h3>
+              ${itemsHtml}
+            </div>
+          `;
+
+          document.getElementById('orderDetailContent').innerHTML = content;
+          document.getElementById('orderDetailModal').classList.add('show');
+        } else {
+          alert('获取订单详情失败: ' + data.message);
+        }
+      } catch (error) {
+        alert('获取订单详情失败: ' + error.message);
       }
     }
   </script>
