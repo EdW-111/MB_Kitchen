@@ -11,9 +11,87 @@ const dishRoutes = require('./routes/dishes');
 const orderRoutes = require('./routes/orders');
 const userRoutes = require('./routes/users');
 const { adminPageMiddleware, adminAuthMiddleware } = require('./middleware/auth');
+const { db, runAsync } = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 初始化数据库表结构（如果不存在）
+const initDatabase = async () => {
+  try {
+    // 顾客表
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT NOT NULL,
+        phone TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE,
+        password_hash TEXT NOT NULL,
+        height INTEGER DEFAULT 0,
+        weight INTEGER DEFAULT 0,
+        address TEXT,
+        additional_info TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 菜品表
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS dishes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        price REAL NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        is_available BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 订单表
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_number TEXT UNIQUE NOT NULL,
+        customer_id INTEGER NOT NULL,
+        status TEXT DEFAULT 'submitted',
+        note TEXT,
+        total_price REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 订单项表
+    await runAsync(`
+      CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        dish_id INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        unit_price_snapshot REAL NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (dish_id) REFERENCES dishes(id)
+      )
+    `);
+
+    // 创建索引
+    await runAsync(`CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id)`);
+    await runAsync(`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)`);
+    await runAsync(`CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)`);
+    await runAsync(`CREATE INDEX IF NOT EXISTS idx_dishes_category ON dishes(category)`);
+
+    console.log('✅ Database initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error.message);
+    throw error;
+  }
+};
 
 // 创建上传文件夹
 const uploadDir = path.join(__dirname, 'public', 'uploads', 'dishes');
@@ -95,12 +173,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 启动服务器
-app.listen(PORT, () => {
-  console.log(`🍽️  ${process.env.RESTAURANT_NAME} 点餐系统`);
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-  console.log(`📋 菜单: http://localhost:${PORT}/menu`);
-  console.log(`📦 所有订单: http://localhost:${PORT}/admin`);
+// 初始化数据库后启动服务器
+initDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🍽️  ${process.env.RESTAURANT_NAME} 点餐系统`);
+    console.log(`✅ Server running at http://localhost:${PORT}`);
+    console.log(`📋 菜单: http://localhost:${PORT}/menu`);
+    console.log(`📦 所有订单: http://localhost:${PORT}/admin`);
+  });
+}).catch(error => {
+  console.error('Failed to initialize database:', error);
+  process.exit(1);
 });
 
 module.exports = app;
