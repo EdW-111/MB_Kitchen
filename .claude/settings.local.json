@@ -9,7 +9,8 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(sqlite3:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(railway run:*)"
     ]
   }
 }
