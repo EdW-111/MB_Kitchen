@@ -13,7 +13,8 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || 'your-default-secret-key-please-change-in-production';
+    const decoded = jwt.verify(token, secret);
     req.userId = decoded.id;
     req.user = decoded;
     next();
@@ -36,7 +37,8 @@ const adminAuthMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'admin-secret');
+    const secret = process.env.JWT_SECRET || 'your-default-secret-key-please-change-in-production';
+    const decoded = jwt.verify(token, secret);
     if (decoded.isAdmin) {
       next();
     } else {
@@ -71,7 +73,8 @@ const adminPageMiddleware = (req, res, next) => {
     }
   } else {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'admin-secret');
+      const secret = process.env.JWT_SECRET || 'your-default-secret-key-please-change-in-production';
+      const decoded = jwt.verify(token, secret);
       if (decoded.isAdmin) {
         console.log(`✅ 管理员页面访问: ${req.ip}`);
         next();
@@ -100,17 +103,19 @@ const adminPageMiddleware = (req, res, next) => {
 };
 
 const generateToken = (user) => {
+  const secret = process.env.JWT_SECRET || 'your-default-secret-key-please-change-in-production';
   return jwt.sign(
     { id: user.id, phone: user.phone, full_name: user.full_name },
-    process.env.JWT_SECRET,
+    secret,
     { expiresIn: '7d' }
   );
 };
 
 const generateAdminToken = () => {
+  const secret = process.env.JWT_SECRET || 'your-default-secret-key-please-change-in-production';
   return jwt.sign(
     { isAdmin: true },
-    process.env.JWT_SECRET || 'admin-secret',
+    secret,
     { expiresIn: '7d' }
   );
 };

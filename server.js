@@ -19,6 +19,8 @@ const PORT = process.env.PORT || 3000;
 // 初始化数据库表结构（如果不存在）
 const initDatabase = async () => {
   try {
+    console.log(`📁 Using database at: ${process.env.DATABASE_PATH || './database.db'}`);
+
     // 顾客表
     await runAsync(`
       CREATE TABLE IF NOT EXISTS customers (
@@ -35,6 +37,7 @@ const initDatabase = async () => {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✅ Customers table ready');
 
     // 菜品表
     await runAsync(`
@@ -50,6 +53,7 @@ const initDatabase = async () => {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('✅ Dishes table ready');
 
     // 订单表
     await runAsync(`
@@ -65,6 +69,7 @@ const initDatabase = async () => {
         FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
       )
     `);
+    console.log('✅ Orders table ready');
 
     // 订单项表
     await runAsync(`
@@ -79,16 +84,18 @@ const initDatabase = async () => {
         FOREIGN KEY (dish_id) REFERENCES dishes(id)
       )
     `);
+    console.log('✅ Order items table ready');
 
     // 创建索引
     await runAsync(`CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id)`);
     await runAsync(`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)`);
     await runAsync(`CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)`);
     await runAsync(`CREATE INDEX IF NOT EXISTS idx_dishes_category ON dishes(category)`);
+    console.log('✅ Indexes ready');
 
-    console.log('✅ Database initialized successfully');
+    console.log('✨ Database initialized successfully');
   } catch (error) {
-    console.error('Error initializing database:', error.message);
+    console.error('❌ Error initializing database:', error);
     throw error;
   }
 };
