@@ -4,7 +4,7 @@ const http = require('http');
 async function testAdminLogin() {
   return new Promise((resolve) => {
     const postData = JSON.stringify({
-      username: 'mkchufang',
+      username: 'mbkitchen',
       password: 'zhengdaqian'
     });
 

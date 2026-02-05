@@ -308,7 +308,7 @@ const adminLogin = async (req, res) => {
     }
 
     // 硬编码的管理员凭证
-    const ADMIN_USERNAME = 'mkchufang';
+    const ADMIN_USERNAME = 'mbkitchen';
     const ADMIN_PASSWORD = 'zhengdaqian';
 
     if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
