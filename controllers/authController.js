@@ -368,5 +368,6 @@ module.exports = {
   getProfile,
   updateProfile,
   adminLogin,
-  adminLogout
+  adminLogout,
+  checkAdminAuth
 };
