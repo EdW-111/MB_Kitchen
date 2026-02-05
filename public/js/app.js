@@ -106,21 +106,26 @@ class App {
     this.updateNavbar();
 
     // 根据页面类型渲染内容
-    switch (this.currentPage) {
-      case 'home':
-        break; // 静态页面
-      case 'menu':
-        this.renderMenu();
-        break;
-      case 'cart':
-        this.renderCart();
-        break;
-      case 'checkout':
-        this.renderCheckout();
-        break;
-      case 'orders':
-        this.renderOrders();
-        break;
+    if (this.currentPage.startsWith('order-detail-')) {
+      const orderId = this.currentPage.replace('order-detail-', '');
+      this.showOrderDetail(parseInt(orderId));
+    } else {
+      switch (this.currentPage) {
+        case 'home':
+          break; // 静态页面
+        case 'menu':
+          this.renderMenu();
+          break;
+        case 'cart':
+          this.renderCart();
+          break;
+        case 'checkout':
+          this.renderCheckout();
+          break;
+        case 'orders':
+          this.renderOrders();
+          break;
+      }
     }
   }
 
@@ -406,7 +411,7 @@ class App {
       }
 
       container.innerHTML = orders.map(order => `
-        <div class="order-item" onclick="app.navigate('order-detail-${order.id}')">
+        <div class="order-item" data-order-id="${order.id}" style="cursor: pointer;">
           <div class="order-info">
             <h3>${order.order_number}</h3>
             <p>下单时间: ${new Date(order.created_at).toLocaleString('zh-CN')}</p>
@@ -421,15 +426,9 @@ class App {
       // 点击订单查看详情
       document.querySelectorAll('.order-item').forEach(item => {
         item.addEventListener('click', async (e) => {
-          const orderId = e.currentTarget.querySelector('h3').textContent
-            .replace('ORD-', '')
-            .split('-')
-            .pop();
-          // 提取订单 ID（简单方案）
-          const allOrders = orders;
-          const orderIndex = allOrders.findIndex(o => o.order_number === e.currentTarget.querySelector('h3').textContent);
-          if (orderIndex !== -1) {
-            this.showOrderDetail(allOrders[orderIndex].id);
+          const orderId = parseInt(item.getAttribute('data-order-id'));
+          if (orderId) {
+            this.showOrderDetail(orderId);
           }
         });
       });
@@ -453,48 +452,57 @@ class App {
         `).join('');
 
         const detailHTML = `
-          <button class="btn btn-secondary" onclick="app.navigate('orders'); return false;">← 返回订单列表</button>
           <div class="order-detail">
-            <h2>${order.order_number}</h2>
-            <div class="order-detail-header">
-              <div>
-                <div class="order-detail-item">
-                  <strong>订单时间</strong>
-                  <span>${new Date(order.created_at).toLocaleString('zh-CN')}</span>
+            <div style="background: #1a2142; padding: 20px; border-radius: 12px; border: 1px solid #2d3561; margin-bottom: 20px;">
+              <h3 style="color: #00d4aa; margin-bottom: 15px;">${order.order_number}</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                  <div style="margin-bottom: 15px;">
+                    <strong style="color: #a0aec0;">订单时间</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${new Date(order.created_at).toLocaleString('zh-CN')}</p>
+                  </div>
+                  <div>
+                    <strong style="color: #a0aec0;">订单状态</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;"><span class="order-status ${order.status}">${this.getStatusLabel(order.status)}</span></p>
+                  </div>
                 </div>
-                <div class="order-detail-item">
-                  <strong>订单状态</strong>
-                  <span class="order-status ${order.status}">${this.getStatusLabel(order.status)}</span>
-                </div>
-              </div>
-              <div>
-                <div class="order-detail-item">
-                  <strong>备注</strong>
-                  <span>${order.note || '无'}</span>
+                <div>
+                  <div>
+                    <strong style="color: #a0aec0;">备注</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${order.note || '无'}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="order-detail-items">
-              <div class="order-detail-items-header">
-                <span>菜品名称</span>
-                <span>数量</span>
-                <span>单价</span>
-                <span>小计</span>
+            <div style="background: #1a2142; padding: 20px; border-radius: 12px; border: 1px solid #2d3561; margin-bottom: 20px;">
+              <h4 style="color: #00d4aa; margin-bottom: 15px;">📋 订单产品</h4>
+              <div style="background: #151b3d; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #2d3561; margin-bottom: 10px; font-weight: bold; color: #a0aec0;">
+                  <span>菜品名称</span>
+                  <span>数量</span>
+                  <span>单价</span>
+                  <span>小计</span>
+                </div>
+                ${itemsHTML}
               </div>
-              ${itemsHTML}
-            </div>
-
-            <div class="order-total">
-              总计: $${order.total_price.toFixed(2)}
+              <div style="text-align: right; padding: 15px; background: #151b3d; border-radius: 8px;">
+                <strong style="color: #00d4aa; font-size: 18px;">总计: $${order.total_price.toFixed(2)}</strong>
+              </div>
             </div>
           </div>
         `;
 
-        const container = document.getElementById('orders-container');
+        const container = document.getElementById('order-detail-container');
         if (container) {
           container.innerHTML = detailHTML;
+          // 切换到订单详情页面
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.getElementById('order-detail-page').classList.add('active');
         }
+      } else {
+        this.showMessage('订单不存在', 'error');
+        this.navigate('orders');
       }
     } catch (error) {
       this.showMessage('加载订单详情失败: ' + error.message, 'error');

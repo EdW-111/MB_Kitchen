@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\n实现管理员功能：登录认证、菜品图片上传、数据清除\n\n- 添加管理员登录认证系统（用户名: mkchufang，密码: zhengdaqian）\n- 实现菜品图片上传功能（支持 JPEG, PNG, GIF, WebP）\n- 为 /admin 路由添加认证保护\n- 为所有管理员 API 端点添加认证保护\n- 修改管理面板添加登陆界面和图片上传表单\n- 清除所有菜品数据\n- 添加 customers 表的 height 和 weight 字段支持\n\nCo-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\n实现管理员功能：登录认证、菜品图片上传、数据清除\n\n- 添加管理员登录认证系统（用户名: mkchufang，密码: zhengdaqian）\n- 实现菜品图片上传功能（支持 JPEG, PNG, GIF, WebP）\n- 为 /admin 路由添加认证保护\n- 为所有管理员 API 端点添加认证保护\n- 修改管理面板添加登陆界面和图片上传表单\n- 清除所有菜品数据\n- 添加 customers 表的 height 和 weight 字段支持\n\nCo-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
