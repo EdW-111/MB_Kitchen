@@ -127,7 +127,13 @@ class App {
   // 更新导航栏
   updateNavbar() {
     const authSection = document.querySelector('.auth-section');
+    const profileNav = document.getElementById('profile-nav');
     if (!authSection) return;
+
+    // 显示/隐藏个人资料链接
+    if (profileNav) {
+      profileNav.style.display = this.currentUser ? 'block' : 'none';
+    }
 
     if (this.currentUser) {
       authSection.innerHTML = `
