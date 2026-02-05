@@ -356,6 +356,17 @@
     </div>
   </div>
 
+  <!-- 用户详情模态框 -->
+  <div class="modal" id="userDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">用户完整资料</div>
+      <div id="userDetailContent" style="max-height: 70vh; overflow-y: auto;"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('userDetailModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const statusLabels = { submitted: '已提交', accepted: '已接受', completed: '已完成', cancelled: '已取消' };
     const categoryLabels = { main: '主食', snack: '小食', drink: '饮品', dessert: '甜品' };
@@ -452,7 +463,7 @@
   try {
     const response = await fetch('/api/users/admin/all');
     const data = await response.json();
-    
+
     if (data.success) {
       const tbody = document.getElementById('users-tbody');
       tbody.innerHTML = data.data.map(user => `
@@ -463,6 +474,7 @@
           <td>${user.weight || '-'}</td>
           <td>${user.order_count || 0}</td>
           <td>
+            <button onclick="viewUserDetail(${user.id})" class="btn btn-primary">查看资料</button>
             <button onclick="deleteUser(${user.id})" class="btn btn-danger btn-sm">删除</button>
           </td>
         </tr>
@@ -642,6 +654,39 @@
         if (data.success) { alert('菜品已删除'); loadDishes(); }
         else { alert('删除失败: ' + data.message); }
       } catch (error) { alert('删除失败: ' + error.message); }
+    }
+
+    async function viewUserDetail(userId) {
+      try {
+        const res = await fetch(`/api/users/admin/${userId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const user = data.data;
+          const content = document.getElementById('userDetailContent');
+          content.innerHTML = `
+            <div style="line-height: 1.8;">
+              <p><strong>用户名：</strong> ${user.full_name}</p>
+              <p><strong>手机号：</strong> ${user.phone}</p>
+              <p><strong>邮箱：</strong> ${user.email || '-'}</p>
+              <p><strong>身高：</strong> ${user.height ? user.height + ' cm' : '-'}</p>
+              <p><strong>体重：</strong> ${user.weight ? user.weight + ' kg' : '-'}</p>
+              <p><strong>地址：</strong> ${user.address || '-'}</p>
+              <p><strong>特殊需求：</strong></p>
+              <div style="background: #151b3d; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #2d3561;">
+                ${user.additional_info ? user.additional_info.replace(/\n/g, '<br>') : '-'}
+              </div>
+              <p style="margin-top: 20px; color: #a0aec0; font-size: 12px;"><strong>注册时间：</strong> ${new Date(user.created_at).toLocaleString('zh-CN')}</p>
+            </div>
+          `;
+          document.getElementById('userDetailModal').classList.add('show');
+        } else {
+          alert('获取用户信息失败');
+        }
+      } catch (error) {
+        console.error('获取用户详情失败:', error);
+        alert('获取用户详情失败');
+      }
     }
 
     async function deleteUser(userId, userName) {

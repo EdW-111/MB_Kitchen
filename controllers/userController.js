@@ -39,10 +39,16 @@ const getUserDetail = async (req, res) => {
     const { id } = req.params;
 
     const user = await getAsync(
-      `SELECT 
+      `SELECT
         id,
         phone,
-        full_name
+        full_name,
+        email,
+        height,
+        weight,
+        address,
+        additional_info,
+        created_at
        FROM customers WHERE id = ?`,
       [id]
     );
@@ -56,13 +62,13 @@ const getUserDetail = async (req, res) => {
 
     // 获取用户的订单
     const orders = await allAsync(
-      `SELECT 
+      `SELECT
         id,
         order_number,
         status,
         total_price,
         created_at
-       FROM orders 
+       FROM orders
        WHERE customer_id = ?
        ORDER BY created_at DESC`,
       [id]
@@ -72,8 +78,6 @@ const getUserDetail = async (req, res) => {
       success: true,
       data: {
         ...user,
-        address: '-',
-        created_at: new Date().toISOString(),
         orders: orders || []
       }
     });

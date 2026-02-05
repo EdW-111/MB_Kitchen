@@ -15,6 +15,7 @@ const initDatabase = async () => {
         height INTEGER DEFAULT 0,
         weight INTEGER DEFAULT 0,
         address TEXT,
+        additional_info TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )

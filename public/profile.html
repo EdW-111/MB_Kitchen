@@ -209,6 +209,10 @@
         <span class="info-label">地址：</span>
         <span class="info-value" id="displayAddress">-</span>
       </div>
+      <div class="info-row">
+        <span class="info-label">特殊需求：</span>
+        <span class="info-value" id="displayAdditional">-</span>
+      </div>
     </div>
 
     <button onclick="toggleEditForm()">✏️ 编辑资料</button>
@@ -233,6 +237,11 @@
       <div class="profile-section">
         <label>地址</label>
         <input type="text" id="editAddress" placeholder="请输入您的收货地址">
+      </div>
+
+      <div class="profile-section">
+        <label>特殊需求（可选）</label>
+        <textarea id="editAdditional" placeholder="例如：减少碳水，增加膳食纤维，过敏信息..." rows="3" style="padding: 12px 16px; border: 1px solid #2d3561; border-radius: 8px; background: #151b3d; color: #e4e9f7; font-family: 'Microsoft YaHei', Arial, sans-serif;"></textarea>
       </div>
 
       <div class="button-group">
@@ -279,12 +288,14 @@
       document.getElementById('displayHeight').textContent = user.height ? `${user.height} cm` : '-';
       document.getElementById('displayWeight').textContent = user.weight ? `${user.weight} kg` : '-';
       document.getElementById('displayAddress').textContent = user.address || '-';
+      document.getElementById('displayAdditional').textContent = user.additional_info || '-';
 
       // 填充编辑表单
       document.getElementById('editName').value = user.full_name || '';
       document.getElementById('editHeight').value = user.height || '';
       document.getElementById('editWeight').value = user.weight || '';
       document.getElementById('editAddress').value = user.address || '';
+      document.getElementById('editAdditional').value = user.additional_info || '';
     }
 
     function toggleEditForm() {
@@ -308,7 +319,8 @@
             full_name: document.getElementById('editName').value,
             height: parseFloat(document.getElementById('editHeight').value) || 0,
             weight: parseFloat(document.getElementById('editWeight').value) || 0,
-            address: document.getElementById('editAddress').value
+            address: document.getElementById('editAddress').value,
+            additional_info: document.getElementById('editAdditional').value
           })
         });
 

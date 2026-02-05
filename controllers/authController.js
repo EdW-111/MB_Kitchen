@@ -5,7 +5,7 @@ const { generateToken } = require('../middleware/auth');
 // 注册
 const register = async (req, res) => {
   try {
-    const { full_name, phone, email, password, height, weight, address } = req.body;
+    const { full_name, phone, email, password, height, weight, address, additional_info } = req.body;
 
     // 验证输入
     if (!full_name || !phone || !password) {
@@ -45,11 +45,11 @@ const register = async (req, res) => {
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 创建用户（添加身高体重和地址）
+    // 创建用户
     const result = await runAsync(
-      `INSERT INTO customers (full_name, phone, email, password_hash, height, weight, address)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [full_name, phone, email || null, hashedPassword, height || 0, weight || 0, address || null]
+      `INSERT INTO customers (full_name, phone, email, password_hash, height, weight, address, additional_info)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [full_name, phone, email || null, hashedPassword, height || 0, weight || 0, address || null, additional_info || null]
     );
 
     const user = {
@@ -59,7 +59,8 @@ const register = async (req, res) => {
       email: email || null,
       height: height || 0,
       weight: weight || 0,
-      address: address || null
+      address: address || null,
+      additional_info: additional_info || null
     };
 
     const token = generateToken(user);
@@ -169,7 +170,7 @@ const logout = (req, res) => {
 const getCurrentUser = async (req, res) => {
   try {
     const user = await getAsync(
-      'SELECT id, full_name, phone, email, height, weight, address FROM customers WHERE id = ?',
+      'SELECT id, full_name, phone, email, height, weight, address, additional_info FROM customers WHERE id = ?',
       [req.userId]
     );
 
@@ -197,7 +198,7 @@ const getCurrentUser = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const user = await getAsync(
-      'SELECT id, full_name, phone, email, height, weight, address FROM customers WHERE id = ?',
+      'SELECT id, full_name, phone, email, height, weight, address, additional_info FROM customers WHERE id = ?',
       [req.userId]
     );
 
@@ -226,7 +227,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.userId;
-    const { full_name, height, weight, address } = req.body;
+    const { full_name, height, weight, address, additional_info } = req.body;
 
     const user = await getAsync('SELECT * FROM customers WHERE id = ?', [userId]);
     if (!user) {
@@ -238,13 +239,14 @@ const updateProfile = async (req, res) => {
 
     await runAsync(
       `UPDATE customers
-       SET full_name = ?, height = ?, weight = ?, address = ?
+       SET full_name = ?, height = ?, weight = ?, address = ?, additional_info = ?
        WHERE id = ?`,
       [
         full_name || user.full_name,
         height !== undefined ? height : user.height,
         weight !== undefined ? weight : user.weight,
         address !== undefined ? address : user.address,
+        additional_info !== undefined ? additional_info : user.additional_info,
         userId
       ]
     );
@@ -259,7 +261,8 @@ const updateProfile = async (req, res) => {
         email: user.email,
         height: height !== undefined ? height : user.height,
         weight: weight !== undefined ? weight : user.weight,
-        address: address !== undefined ? address : user.address
+        address: address !== undefined ? address : user.address,
+        additional_info: additional_info !== undefined ? additional_info : user.additional_info
       }
     });
   } catch (error) {
