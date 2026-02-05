@@ -3,7 +3,33 @@ class App {
   constructor() {
     this.currentUser = null;
     this.currentPage = 'home';
+    this.selectedPlan = '5'; // 默认选择 5顿 套餐
+    this.planPrices = {
+      '5': 69.95,
+      '10': 119.90
+    };
+    this.planLabels = {
+      '5': '5顿 $69.95（13.99/顿）',
+      '10': '10顿 $119.9（11.9/顿）'
+    };
     this.init();
+  }
+
+  // 获取当周日期范围
+  getWeekRange() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // 调整为获得当周周一
+    const monday = new Date(today.setDate(diff));
+    const sunday = new Date(today.setDate(diff + 6));
+
+    const formatDate = (date) => {
+      const m = date.getMonth() + 1;
+      const d = date.getDate();
+      return `${m}/${d}`;
+    };
+
+    return `${formatDate(monday)}-${formatDate(sunday)}`;
   }
 
   async init() {
@@ -171,26 +197,23 @@ class App {
       const container = document.getElementById('dishes-container');
       if (!container) return;
 
-      // 加载分类
-      const catRes = await window.api.dishes.getCategories();
-      const categories = catRes.data || [];
-
-      // 渲染分类过滤
+      // 渲染套餐选择
       const categoryFilter = document.getElementById('category-filter');
       if (categoryFilter) {
+        const weekRange = this.getWeekRange();
         categoryFilter.innerHTML = `
-          <button class="category-btn active" data-category="">全部</button>
-          ${categories.map(cat => `
-            <button class="category-btn" data-category="${cat.value}">${cat.label}</button>
-          `).join('')}
+          <div style="margin-bottom: 15px; font-size: 12px; color: #666;">📅 本周: ${weekRange}</div>
+          <button class="category-btn ${this.selectedPlan === '5' ? 'active' : ''}" data-plan="5">${this.planLabels['5']}</button>
+          <button class="category-btn ${this.selectedPlan === '10' ? 'active' : ''}" data-plan="10">${this.planLabels['10']}</button>
         `;
 
-        // 分类筛选事件
-        document.querySelectorAll('.category-btn').forEach(btn => {
+        // 套餐选择事件
+        document.querySelectorAll('.category-btn[data-plan]').forEach(btn => {
           btn.addEventListener('click', async () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.category-btn[data-plan]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            await this.loadDishes(btn.dataset.category);
+            this.selectedPlan = btn.dataset.plan;
+            await this.loadDishes('');
           });
         });
       }
@@ -223,8 +246,14 @@ class App {
           const dishId = parseInt(btn.dataset.dishId);
           const dish = dishes.find(d => d.id === dishId);
           if (dish) {
-            window.cart.addItem(dish);
-            this.showMessage(`已将 "${dish.name}" 加入购物车`, 'success');
+            // 使用套餐价格而不是菜品价格
+            const dishWithPlan = {
+              ...dish,
+              price: this.planPrices[this.selectedPlan],
+              plan: this.selectedPlan
+            };
+            window.cart.addItem(dishWithPlan);
+            this.showMessage(`已将 "${dish.name}" 加入 ${this.planLabels[this.selectedPlan]} 套餐`, 'success');
             this.updateNavbar();
           }
         });
@@ -253,7 +282,6 @@ class App {
           <div class="dish-name">${dish.name}</div>
           <div class="dish-category">${categoryLabels[dish.category] || dish.category}</div>
           <div class="dish-description">${dish.description || '暂无描述'}</div>
-          <div class="dish-price">$${dish.price.toFixed(2)}</div>
           <div class="dish-actions">
             <button class="btn btn-primary btn-sm add-to-cart-btn" data-dish-id="${dish.id}">加入购物车</button>
           </div>
@@ -281,11 +309,29 @@ class App {
       return;
     }
 
+    // 按套餐分组统计数量
+    const planTotals = {};
+    items.forEach(item => {
+      const plan = item.plan || '5';
+      if (!planTotals[plan]) {
+        planTotals[plan] = 0;
+      }
+      planTotals[plan] += item.quantity;
+    });
+
+    // 生成套餐摘要
+    const planSummary = Object.entries(planTotals).map(([plan, count]) => {
+      const planLabel = app.planLabels[plan];
+      const planPrice = app.planPrices[plan];
+      const totalForPlan = planPrice * count;
+      return `<div style="margin-bottom: 8px;">${planLabel} × ${count} = $${totalForPlan.toFixed(2)}</div>`;
+    }).join('');
+
     const cartItemsHTML = items.map(item => `
       <div class="cart-item">
         <div>
           <h4>${item.name}</h4>
-          <p style="color: var(--primary-color); font-weight: bold;">$${item.price.toFixed(2)} 每份</p>
+          <p style="color: var(--primary-color); font-weight: bold;">套餐: ${item.plan || '5'}顿</p>
         </div>
         <div class="quantity-control">
           <button onclick="document.querySelector('[data-dish-id=\\"${item.id}\\"] ').value = Math.max(1, parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value) - 1); window.cart.updateQuantity(${item.id}, parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value)); app.renderCart();" class="btn btn-sm" style="background: #f0f0f0; color: #333;">-</button>
@@ -299,11 +345,28 @@ class App {
 
     document.getElementById('cart-items-container').innerHTML = cartItemsHTML;
 
-    // 更新摘要
-    document.querySelector('.summary-row:last-of-type').innerHTML = `
-      <span>小计:</span>
-      <span>$${total.toFixed(2)}</span>
-    `;
+    // 更新摘要 - 显示套餐分组
+    const summaryContainer = document.querySelector('.cart-summary');
+    if (summaryContainer) {
+      const summaryHTML = summaryContainer.innerHTML;
+      summaryContainer.innerHTML = `
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0;">套餐统计</h4>
+          ${planSummary}
+        </div>
+        <div class="summary-row">
+          <span>小计:</span>
+          <span>$${total.toFixed(2)}</span>
+        </div>
+        <button class="btn btn-primary" id="checkout-btn">
+          继续结账 →
+        </button>
+      `;
+      document.getElementById('checkout-btn').addEventListener('click', () => {
+        if (app.currentUser) app.navigate('checkout');
+        else app.navigate('login');
+      });
+    }
 
     // 更新数量变化时的摘要
     document.querySelectorAll('.quantity-input').forEach(input => {
@@ -526,16 +589,16 @@ class App {
     const data = {
       full_name: formData.get('full_name'),
       phone: formData.get('phone'),
-      email: formData.get('email') || null,
+      wechat: formData.get('wechat'),
       password: formData.get('password'),
       height: parseFloat(formData.get('height')) || 0,
       weight: parseFloat(formData.get('weight')) || 0,
-      address: formData.get('address') || null,
+      address: formData.get('address'),
       additional_info: formData.get('additional_info') || null
     };
 
     // 验证
-    if (!data.full_name || !data.phone || !data.password) {
+    if (!data.full_name || !data.phone || !data.wechat || !data.password || !data.address) {
       this.showMessage('请填写所有必填项', 'error');
       return;
     }

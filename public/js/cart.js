@@ -26,6 +26,7 @@ class Cart {
         name: dish.name,
         price: dish.price,
         category: dish.category,
+        plan: dish.plan || '5',
         quantity: 1
       };
     }
