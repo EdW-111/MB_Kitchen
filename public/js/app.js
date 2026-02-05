@@ -330,11 +330,7 @@ class App {
         <div>
           <h4>${item.name}</h4>
           <p style="color: var(--primary-color); font-weight: bold;">套餐: ${item.plan || '5'}顿</p>
-        </div>
-        <div class="quantity-control">
-          <button onclick="document.querySelector('[data-dish-id=\\"${item.id}\\"] ').value = Math.max(1, parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value) - 1); window.cart.updateQuantity(${item.id}, parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value)); app.renderCart();" class="btn btn-sm" style="background: #f0f0f0; color: #333;">-</button>
-          <input type="number" class="quantity-input" data-dish-id="${item.id}" value="${item.quantity}" min="1" max="99">
-          <button onclick="document.querySelector('[data-dish-id=\\"${item.id}\\"]').value = parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value) + 1; window.cart.updateQuantity(${item.id}, parseInt(document.querySelector('[data-dish-id=\\"${item.id}\\"]').value)); app.renderCart();" class="btn btn-sm" style="background: #f0f0f0; color: #333;">+</button>
+          <p style="color: #666; font-size: 14px;">数量: ${item.quantity}</p>
         </div>
         <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
         <button class="btn btn-danger btn-sm remove-btn" data-dish-id="${item.id}">删除</button>
