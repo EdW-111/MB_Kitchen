@@ -5,7 +5,7 @@ const { generateToken } = require('../middleware/auth');
 // 注册
 const register = async (req, res) => {
   try {
-    const { full_name, phone, email, password, height, weight } = req.body;
+    const { full_name, phone, email, password, height, weight, address } = req.body;
 
     // 验证输入
     if (!full_name || !phone || !password) {
@@ -45,11 +45,11 @@ const register = async (req, res) => {
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 创建用户（添加身高体重）
+    // 创建用户（添加身高体重和地址）
     const result = await runAsync(
-      `INSERT INTO customers (full_name, phone, email, password_hash, height, weight)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [full_name, phone, email || null, hashedPassword, height || 0, weight || 0]
+      `INSERT INTO customers (full_name, phone, email, password_hash, height, weight, address)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [full_name, phone, email || null, hashedPassword, height || 0, weight || 0, address || null]
     );
 
     const user = {
@@ -58,7 +58,8 @@ const register = async (req, res) => {
       phone,
       email: email || null,
       height: height || 0,
-      weight: weight || 0
+      weight: weight || 0,
+      address: address || null
     };
 
     const token = generateToken(user);
@@ -168,7 +169,7 @@ const logout = (req, res) => {
 const getCurrentUser = async (req, res) => {
   try {
     const user = await getAsync(
-      'SELECT id, full_name, phone, email, height, weight FROM customers WHERE id = ?',
+      'SELECT id, full_name, phone, email, height, weight, address FROM customers WHERE id = ?',
       [req.userId]
     );
 
