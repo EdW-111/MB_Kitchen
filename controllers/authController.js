@@ -5,13 +5,13 @@ const { generateToken } = require('../middleware/auth');
 // 注册
 const register = async (req, res) => {
   try {
-    const { full_name, phone, email, password, height, weight, address, additional_info } = req.body;
+    const { full_name, phone, wechat, password, height, weight, address, additional_info } = req.body;
 
     // 验证输入
-    if (!full_name || !phone || !password) {
+    if (!full_name || !phone || !wechat || !password || !address) {
       return res.status(400).json({
         success: false,
-        message: '姓名、手机号和密码为必填项'
+        message: '姓名、手机号、微信号、密码和住址为必填项'
       });
     }
 
@@ -28,38 +28,36 @@ const register = async (req, res) => {
       });
     }
 
-    // 如果提供了邮箱，检查邮箱是否已注册
-    if (email) {
-      const emailExists = await getAsync(
-        'SELECT id FROM customers WHERE email = ?',
-        [email]
-      );
-      if (emailExists) {
-        return res.status(409).json({
-          success: false,
-          message: '该邮箱已被注册'
-        });
-      }
+    // 检查微信号是否已注册
+    const wechatExists = await getAsync(
+      'SELECT id FROM customers WHERE email = ?',
+      [wechat]
+    );
+    if (wechatExists) {
+      return res.status(409).json({
+        success: false,
+        message: '该微信号已被注册'
+      });
     }
 
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 创建用户
+    // 创建用户 (使用 email 字段存储微信号)
     const result = await runAsync(
       `INSERT INTO customers (full_name, phone, email, password_hash, height, weight, address, additional_info)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [full_name, phone, email || null, hashedPassword, height || 0, weight || 0, address || null, additional_info || null]
+      [full_name, phone, wechat, hashedPassword, height || 0, weight || 0, address, additional_info || null]
     );
 
     const user = {
       id: result.id,
       full_name,
       phone,
-      email: email || null,
+      wechat,
       height: height || 0,
       weight: weight || 0,
-      address: address || null,
+      address,
       additional_info: additional_info || null
     };
 
