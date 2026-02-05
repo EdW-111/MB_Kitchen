@@ -241,6 +241,11 @@
 
       <!-- 菜单管理面板 -->
       <div id="dishes-panel" class="panel" style="padding: 20px;">
+        <div style="background: #1a2142; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #00d4aa;">
+          <strong style="color: #00d4aa;">💡 套餐定价说明</strong><br>
+          <span style="color: #a0aec0; font-size: 14px;">菜品价格已关闭编辑，所有菜品按选定套餐计费：</span><br>
+          <span style="color: #00d4aa; font-weight: bold;">5顿 $69.95（13.99/顿） | 10顿 $119.9（11.9/顿）</span>
+        </div>
         <button class="refresh-btn" onclick="openDishModal()">➕ 添加新菜品</button>
         <table id="dishes-table">
           <thead>
@@ -249,13 +254,12 @@
               <th>菜名</th>
               <th>分类</th>
               <th>描述</th>
-              <th>价格</th>
               <th>状态</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody id="dishes-tbody">
-            <tr><td colspan="7" style="text-align: center;">加载中...</td></tr>
+            <tr><td colspan="6" style="text-align: center;">加载中...</td></tr>
           </tbody>
         </table>
       </div>
@@ -320,9 +324,12 @@
           <option value="dessert">甜品</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>价格 *</label>
-        <input type="number" id="dish-price" placeholder="输入价格" step="0.01">
+      <div class="form-group" style="background: #151b3d; padding: 12px; border-radius: 8px; border-left: 3px solid #ffc107;">
+        <label style="color: #ffc107;">⚠️ 价格说明</label>
+        <p style="color: #a0aec0; margin: 8px 0; font-size: 14px;">菜品价格已统一为套餐制：</p>
+        <p style="color: #e4e9f7; margin: 5px 0; font-weight: bold;">• 5顿套餐：$69.95（13.99/顿）</p>
+        <p style="color: #e4e9f7; margin: 5px 0; font-weight: bold;">• 10顿套餐：$119.90（11.9/顿）</p>
+        <input type="hidden" id="dish-price">
       </div>
       <div class="form-group">
         <label>菜品照片</label>
@@ -439,7 +446,7 @@
         const dishes = data.data || [];
         const tbody = document.getElementById('dishes-tbody');
 
-        if (dishes.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">暂无菜品</td></tr>'; return; }
+        if (dishes.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">暂无菜品</td></tr>'; return; }
         tbody.innerHTML = dishes.map(dish => `
           <tr>
             <td>
@@ -448,7 +455,6 @@
             <td><strong>${dish.name}</strong></td>
             <td>${categoryLabels[dish.category] || dish.category}</td>
             <td>${dish.description || '-'}</td>
-            <td>$${(dish.price || 0).toFixed(2)}</td>
             <td><span class="badge" style="background: ${dish.is_available ? '#a8e6cf' : '#fab1a0'}; color: ${dish.is_available ? '#06a77d' : '#c92a2a'};">${dish.is_available ? '上架' : '下架'}</span></td>
             <td><div class="action-buttons">
               <button class="btn btn-primary" onclick="openDishModal(${dish.id})">编辑</button>
@@ -562,7 +568,6 @@
             const dish = data.data;
             document.getElementById('dish-name').value = dish.name;
             document.getElementById('dish-category').value = dish.category;
-            document.getElementById('dish-price').value = dish.price;
             document.getElementById('dish-description').value = dish.description || '';
 
             // 显示现有图片
@@ -582,7 +587,6 @@
         document.getElementById('dishModalTitle').textContent = '添加新菜品';
         document.getElementById('dish-name').value = '';
         document.getElementById('dish-category').value = '';
-        document.getElementById('dish-price').value = '';
         document.getElementById('dish-description').value = '';
         imagePreview.style.display = 'none';
 
@@ -609,17 +613,16 @@
     async function saveDish() {
       const name = document.getElementById('dish-name').value;
       const category = document.getElementById('dish-category').value;
-      const price = document.getElementById('dish-price').value;
       const description = document.getElementById('dish-description').value;
       const imageInput = document.getElementById('dish-image');
 
-      if (!name || !category || !price) { alert('请填写必填项'); return; }
+      if (!name || !category) { alert('请填写必填项（菜名、分类）'); return; }
 
       try {
         const formData = new FormData();
         formData.append('name', name);
         formData.append('category', category);
-        formData.append('price', parseFloat(price));
+        formData.append('price', 0); // 套餐定价，忽略单品价格
         formData.append('description', description);
 
         if (imageInput && imageInput.files && imageInput.files[0]) {
