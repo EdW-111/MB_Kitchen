@@ -10,7 +10,8 @@
       "Bash(xargs kill:*)",
       "Bash(sqlite3:*)",
       "Bash(git push:*)",
-      "Bash(railway run:*)"
+      "Bash(railway run:*)",
+      "Bash(timeout 5 npm start:*)"
     ]
   }
 }
