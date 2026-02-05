@@ -61,6 +61,7 @@ const adminPageMiddleware = (req, res, next) => {
     // 如果是 API 请求，返回 JSON 错误
     if (req.accepts('html')) {
       // 允许访问 HTML 页面，前端会检查认证状态
+      console.log(`⚠️  未认证的管理面板访问尝试: ${req.ip}`);
       next();
     } else {
       return res.status(401).json({
@@ -72,6 +73,7 @@ const adminPageMiddleware = (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'admin-secret');
       if (decoded.isAdmin) {
+        console.log(`✅ 管理员页面访问: ${req.ip}`);
         next();
       } else {
         if (req.accepts('html')) {
@@ -84,6 +86,7 @@ const adminPageMiddleware = (req, res, next) => {
         }
       }
     } catch (error) {
+      console.log(`⚠️  无效的管理员 token 访问: ${req.ip}`);
       if (req.accepts('html')) {
         next();
       } else {

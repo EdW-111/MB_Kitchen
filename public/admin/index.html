@@ -653,24 +653,33 @@
     document.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
       setupImageUploadHandler();
+      // 每 5 分钟检查一次认证状态
+      setInterval(checkAdminAuth, 5 * 60 * 1000);
     });
 
     function checkAdminAuth() {
-      // 检查管理员是否已登陆（通过 cookie）
-      // 如果没有登陆，显示登陆表单；如果已登陆，显示管理面板
-      fetch('/api/auth/admin/check', { credentials: 'include' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('admin-wrapper').style.display = 'flex';
-            loadOrders();
-            setInterval(loadOrders, 30000);
-          } else {
-            showLoginForm();
-          }
-        })
-        .catch(() => showLoginForm());
+      // 检查 cookie 中是否有 admin_token
+      const token = document.cookie.split('; ').find(row => row.startsWith('admin_token='));
+
+      if (token) {
+        // 如果有 token，验证其有效性
+        fetch('/api/auth/admin/check', { credentials: 'include' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              document.getElementById('login-container').style.display = 'none';
+              document.getElementById('admin-wrapper').style.display = 'flex';
+              if (document.getElementById('orders-tbody').innerHTML.includes('加载中')) {
+                loadOrders();
+              }
+            } else {
+              showLoginForm();
+            }
+          })
+          .catch(() => showLoginForm());
+      } else {
+        showLoginForm();
+      }
     }
 
     function showLoginForm() {

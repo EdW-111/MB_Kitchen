@@ -281,27 +281,57 @@ const adminLogin = async (req, res) => {
       });
     }
 
+    // 防暴力破解 - 记录登陆尝试
+    if (!global.adminLoginAttempts) {
+      global.adminLoginAttempts = {};
+    }
+
+    const attemptKey = req.ip;
+    const now = Date.now();
+    const attempts = global.adminLoginAttempts[attemptKey] || [];
+
+    // 清除 10 分钟前的尝试记录
+    global.adminLoginAttempts[attemptKey] = attempts.filter(t => now - t < 10 * 60 * 1000);
+
+    // 如果 10 分钟内尝试超过 5 次，拒绝请求
+    if (global.adminLoginAttempts[attemptKey].length >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: '登陆尝试次数过多，请在 10 分钟后重试'
+      });
+    }
+
     // 硬编码的管理员凭证
     const ADMIN_USERNAME = 'mkchufang';
     const ADMIN_PASSWORD = 'zhengdaqian';
 
     if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+      // 记录失败的登陆尝试
+      global.adminLoginAttempts[attemptKey].push(now);
+
       return res.status(401).json({
         success: false,
         message: '用户名或密码错误'
       });
     }
 
+    // 清除登陆尝试记录（成功登陆）
+    delete global.adminLoginAttempts[attemptKey];
+
     const { generateAdminToken } = require('../middleware/auth');
     const token = generateAdminToken();
 
-    // 设置 HttpOnly Cookie
+    // 设置 Cookie
     res.cookie('admin_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      httpOnly: false,  // 改为 false 使前端可以检查 cookie
+      secure: false,    // 开发环境不需要 HTTPS
+      sameSite: 'Lax',  // 改为 Lax 以支持跨站请求
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/'         // 确保 cookie 在所有路径都可用
     });
+
+    // 记录管理员登陆
+    console.log(`✅ 管理员登陆成功: ${username} (IP: ${req.ip})`);
 
     res.json({
       success: true,
