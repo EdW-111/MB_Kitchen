@@ -46,7 +46,10 @@ const upload = multer({
 });
 
 // 中间件
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

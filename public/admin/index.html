@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理面板 - Delicious Kitchen</title>
+  <title>管理面板 - mk厨房</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
     * { box-sizing: border-box; }
@@ -699,10 +699,13 @@
         if (data.success) {
           document.getElementById('admin-username').value = '';
           document.getElementById('admin-password').value = '';
-          document.getElementById('login-container').style.display = 'none';
-          document.getElementById('admin-wrapper').style.display = 'flex';
-          loadOrders();
-          setInterval(loadOrders, 30000);
+          // 延迟一下确保 Cookie 被设置
+          setTimeout(() => {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('admin-wrapper').style.display = 'flex';
+            loadOrders();
+            setInterval(loadOrders, 30000);
+          }, 200);
         } else {
           alert(data.message || '登陆失败');
         }
