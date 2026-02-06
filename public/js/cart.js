@@ -2,6 +2,11 @@
 class Cart {
   constructor() {
     this.items = this.loadFromStorage();
+    this.selectedPlan = localStorage.getItem('selectedPlan') || null;
+    this.planPrices = {
+      '5': 69.95,
+      '10': 119.90
+    };
   }
 
   // 从 localStorage 加载
@@ -15,7 +20,18 @@ class Cart {
     localStorage.setItem('cart', JSON.stringify(this.items));
   }
 
-  // 添加到购物车
+  // 设置套餐类型
+  setPlan(plan) {
+    this.selectedPlan = plan;
+    localStorage.setItem('selectedPlan', plan);
+  }
+
+  // 获取套餐类型
+  getPlan() {
+    return this.selectedPlan;
+  }
+
+  // 添加到购物车（简化：只存 id, name, quantity）
   addItem(dish) {
     const id = dish.id;
     if (this.items[id]) {
@@ -24,9 +40,6 @@ class Cart {
       this.items[id] = {
         id: dish.id,
         name: dish.name,
-        price: dish.price,
-        category: dish.category,
-        plan: dish.plan || '5',
         quantity: 1
       };
     }
@@ -54,6 +67,8 @@ class Cart {
   // 清空购物车
   clear() {
     this.items = {};
+    this.selectedPlan = null;
+    localStorage.removeItem('selectedPlan');
     this.saveToStorage();
   }
 
@@ -62,11 +77,12 @@ class Cart {
     return Object.values(this.items);
   }
 
-  // 获取购物车总价
+  // 获取购物车总价（根据 selectedPlan 计算）
   getTotal() {
-    return Object.values(this.items).reduce((sum, item) => {
-      return sum + (item.price * item.quantity);
-    }, 0);
+    if (!this.selectedPlan) return 0;
+    const count = this.getCount();
+    const unitPrice = this.planPrices[this.selectedPlan] || 0;
+    return unitPrice * count;
   }
 
   // 获取购物车项目数量

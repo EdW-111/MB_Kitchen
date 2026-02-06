@@ -3,7 +3,6 @@ class App {
   constructor() {
     this.currentUser = null;
     this.currentPage = 'home';
-    this.selectedPlan = '5'; // 默认选择 5顿 套餐
     this.planPrices = {
       '5': 69.95,
       '10': 119.90
@@ -19,7 +18,7 @@ class App {
   getWeekRange() {
     const today = new Date();
     const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // 调整为获得当周周一
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(today.setDate(diff));
     const sunday = new Date(today.setDate(diff + 6));
 
@@ -66,6 +65,23 @@ class App {
       if (this.currentUser) this.navigate('orders');
       else this.navigate('login');
     });
+
+    // 汉堡菜单切换
+    const hamburger = document.getElementById('hamburger-btn');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('open');
+        hamburger.classList.toggle('active');
+      });
+      // 点击导航链接后关闭菜单
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('open');
+          hamburger.classList.remove('active');
+        });
+      });
+    }
 
     // 认证按钮
     const loginBtn = document.getElementById('login-btn');
@@ -115,6 +131,11 @@ class App {
   navigate(page) {
     this.currentPage = page;
     this.render();
+    // 关闭汉堡菜单
+    const navLinks = document.querySelector('.nav-links');
+    const hamburger = document.getElementById('hamburger-btn');
+    if (navLinks) navLinks.classList.remove('open');
+    if (hamburger) hamburger.classList.remove('active');
   }
 
   // 渲染页面
@@ -187,7 +208,7 @@ class App {
     const cartCount = window.cart.getCount();
     const cartNav = document.getElementById('cart-nav');
     if (cartNav) {
-      cartNav.innerHTML = `🛒 购物车 ${cartCount > 0 ? `<span style="background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; margin-left: 5px;">${cartCount}</span>` : ''}`;
+      cartNav.innerHTML = `🛒 购物车 ${cartCount > 0 ? `<span class="cart-badge">${cartCount}</span>` : ''}`;
     }
   }
 
@@ -197,23 +218,26 @@ class App {
       const container = document.getElementById('dishes-container');
       if (!container) return;
 
-      // 渲染套餐选择
+      // 渲染侧栏：周日期 + 套餐价格信息卡
       const categoryFilter = document.getElementById('category-filter');
       if (categoryFilter) {
         const weekRange = this.getWeekRange();
         categoryFilter.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;">分类</h3>
-            <div style="font-size: 18px; color: #fffefe;">📅 本周: ${weekRange}</div>
+          <div class="plan-info-header">
+            <h3>本周菜单</h3>
+            <div class="plan-info-week">📅 ${weekRange}</div>
           </div>
-          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <div style="flex: 1; padding: 15px; background: #f0f0f0; border-radius: 8px; text-align: center; color: #333; font-weight: bold;">
-              ${this.planLabels['5']}
-            </div>
-            <div style="flex: 1; padding: 15px; background: linear-gradient(135deg, #00d4aa, #00b894); border-radius: 8px; text-align: center; color: #0a0e27; font-weight: bold;">
-              ${this.planLabels['10']}
-            </div>
+          <div class="plan-info-card">
+            <div class="plan-info-card-title">5顿套餐</div>
+            <div class="plan-info-card-price">$69.95</div>
+            <div class="plan-info-card-unit">$13.99/顿</div>
           </div>
+          <div class="plan-info-card plan-info-card-highlight">
+            <div class="plan-info-card-title">10顿套餐</div>
+            <div class="plan-info-card-price">$119.90</div>
+            <div class="plan-info-card-unit">$11.99/顿</div>
+          </div>
+          <p class="plan-info-hint">在购物车中选择套餐</p>
         `;
       }
 
@@ -237,33 +261,12 @@ class App {
         return;
       }
 
-      // 按套餐类型分组菜品
-      const dishes5 = dishes.filter(d => d.category === '5');
-      const dishes10 = dishes.filter(d => d.category === '10');
-
-      let html = '';
-
-      // 5顿套餐菜品
-      if (dishes5.length > 0) {
-        html += `<div style="margin-bottom: 30px;">
-          <h3 style="color: #333; margin-bottom: 15px;">5顿套餐</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-            ${dishes5.map(dish => this.renderDishCard(dish)).join('')}
-          </div>
-        </div>`;
-      }
-
-      // 10顿套餐菜品
-      if (dishes10.length > 0) {
-        html += `<div>
-          <h3 style="color: #333; margin-bottom: 15px;">10顿套餐</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-            ${dishes10.map(dish => this.renderDishCard(dish)).join('')}
-          </div>
-        </div>`;
-      }
-
-      container.innerHTML = html;
+      // 所有菜品统一展示
+      container.innerHTML = `
+        <div class="dishes-grid">
+          ${dishes.map(dish => this.renderDishCard(dish)).join('')}
+        </div>
+      `;
 
       // 添加购物车事件
       document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
@@ -271,14 +274,7 @@ class App {
           const dishId = parseInt(btn.dataset.dishId);
           const dish = dishes.find(d => d.id === dishId);
           if (dish) {
-            // 使用菜品本身的套餐类型
-            const planType = dish.category; // '5' 或 '10'
-            const dishWithPlan = {
-              ...dish,
-              price: this.planPrices[planType],
-              plan: planType
-            };
-            window.cart.addItem(dishWithPlan);
+            window.cart.addItem(dish);
             this.showMessage(`已将 "${dish.name}" 加入购物车`, 'success');
             this.updateNavbar();
           }
@@ -290,21 +286,15 @@ class App {
   }
 
   renderDishCard(dish) {
-    const categoryLabels = {
-      '5': '5顿套餐',
-      '10': '10顿套餐'
-    };
-
     const imageContent = dish.image_url
-      ? `<img src="${dish.image_url}" alt="${dish.name}" style="width: 100%; height: 100%; object-fit: cover;">`
-      : '<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 48px;">🍽️</div>';
+      ? `<img src="${dish.image_url}" alt="${dish.name}" class="dish-image-img">`
+      : '<div class="dish-image-placeholder">🍽️</div>';
 
     return `
       <div class="dish-card">
         <div class="dish-image">${imageContent}</div>
         <div class="dish-info">
           <div class="dish-name">${dish.name}</div>
-          <div class="dish-category">${categoryLabels[dish.category] || dish.category}</div>
           <div class="dish-description">${dish.description || '暂无描述'}</div>
           <div class="dish-actions">
             <button class="btn btn-primary btn-sm add-to-cart-btn" data-dish-id="${dish.id}">加入购物车</button>
@@ -320,7 +310,7 @@ class App {
     if (!cartPage) return;
 
     const items = window.cart.getItems();
-    const total = window.cart.getTotal();
+    const selectedPlan = window.cart.getPlan();
 
     if (items.length === 0) {
       document.getElementById('cart-items-container').innerHTML = `
@@ -330,57 +320,84 @@ class App {
           <button class="btn btn-primary" onclick="app.navigate('menu')">浏览菜单</button>
         </div>
       `;
+      // 清空摘要
+      const summaryContainer = document.querySelector('.cart-summary');
+      if (summaryContainer) {
+        summaryContainer.innerHTML = `
+          <div class="summary-row">
+            <span>小计:</span>
+            <span>$0.00</span>
+          </div>
+          <button class="btn btn-primary" id="checkout-btn" disabled>继续结账 →</button>
+        `;
+      }
       return;
     }
 
-    // 按套餐分组统计数量
-    const planTotals = {};
-    items.forEach(item => {
-      const plan = item.plan || '5';
-      if (!planTotals[plan]) {
-        planTotals[plan] = 0;
-      }
-      planTotals[plan] += item.quantity;
-    });
-
-    // 生成套餐摘要
-    const planSummary = Object.entries(planTotals).map(([plan, count]) => {
-      const planLabel = app.planLabels[plan];
-      const planPrice = app.planPrices[plan];
-      const totalForPlan = planPrice * count;
-      return `<div style="margin-bottom: 8px;">${planLabel} × ${count} = $${totalForPlan.toFixed(2)}</div>`;
-    }).join('');
+    // 套餐选择器 + 菜品列表
+    const planSelectorHTML = `
+      <div class="plan-selector">
+        <h4 class="plan-selector-title">选择套餐类型</h4>
+        <div class="plan-selector-options">
+          <label class="plan-option ${selectedPlan === '5' ? 'selected' : ''}">
+            <input type="radio" name="plan" value="5" ${selectedPlan === '5' ? 'checked' : ''}>
+            <span class="plan-option-label">5顿套餐</span>
+            <span class="plan-option-price">$69.95 / 顿</span>
+          </label>
+          <label class="plan-option ${selectedPlan === '10' ? 'selected' : ''}">
+            <input type="radio" name="plan" value="10" ${selectedPlan === '10' ? 'checked' : ''}>
+            <span class="plan-option-label">10顿套餐</span>
+            <span class="plan-option-price">$119.90 / 顿</span>
+          </label>
+        </div>
+      </div>
+    `;
 
     const cartItemsHTML = items.map(item => `
       <div class="cart-item">
         <div>
           <h4>${item.name}</h4>
-          <p style="color: var(--primary-color); font-weight: bold;">套餐: ${item.plan || '5'}顿</p>
         </div>
         <div class="quantity-control">
           <input type="number" class="quantity-input" data-dish-id="${item.id}" value="${item.quantity}" min="1" max="99">
         </div>
-        <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
         <button class="btn btn-danger btn-sm remove-btn" data-dish-id="${item.id}">删除</button>
       </div>
     `).join('');
 
-    document.getElementById('cart-items-container').innerHTML = cartItemsHTML;
+    document.getElementById('cart-items-container').innerHTML = planSelectorHTML + cartItemsHTML;
 
-    // 更新摘要 - 显示套餐分组
+    // 套餐选择器事件
+    document.querySelectorAll('.plan-option input[name="plan"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        window.cart.setPlan(e.target.value);
+        this.renderCart();
+      });
+    });
+
+    // 更新摘要
+    const total = window.cart.getTotal();
+    const count = window.cart.getCount();
     const summaryContainer = document.querySelector('.cart-summary');
     if (summaryContainer) {
-      const summaryHTML = summaryContainer.innerHTML;
+      const planLabel = selectedPlan ? this.planLabels[selectedPlan] : '未选择';
+      const canCheckout = selectedPlan !== null;
       summaryContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #00d4aa, #00b894); padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #0a0e27;">
-          <h4 style="margin: 0 0 10px 0; font-weight: bold; color: #0a0e27;">套餐统计</h4>
-          <div style="color: #0a0e27;">${planSummary}</div>
+        ${selectedPlan ? `
+        <div class="plan-summary-card">
+          <h4>套餐统计</h4>
+          <div>${planLabel} × ${count}</div>
         </div>
+        ` : `
+        <div class="plan-summary-warning">
+          请先选择套餐类型
+        </div>
+        `}
         <div class="summary-row">
           <span>小计:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button class="btn btn-primary" id="checkout-btn">
+        <button class="btn btn-primary" id="checkout-btn" ${canCheckout ? '' : 'disabled'}>
           继续结账 →
         </button>
       `;
@@ -389,20 +406,6 @@ class App {
         else app.navigate('login');
       });
     }
-
-    // 更新数量变化时的摘要
-    document.querySelectorAll('.quantity-input').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const dishId = parseInt(e.target.dataset.dishId);
-        const quantity = parseInt(e.target.value);
-        window.cart.updateQuantity(dishId, quantity);
-        const newTotal = window.cart.getTotal();
-        document.querySelector('.summary-row:last-of-type').innerHTML = `
-          <span>小计:</span>
-          <span>$${newTotal.toFixed(2)}</span>
-        `;
-      });
-    });
   }
 
   // ==================== 结账页面 ====================
@@ -413,21 +416,27 @@ class App {
     }
 
     const items = window.cart.getItems();
+    const selectedPlan = window.cart.getPlan();
     const total = window.cart.getTotal();
+    const count = window.cart.getCount();
+    const planLabel = selectedPlan ? this.planLabels[selectedPlan] : '未选择';
 
     const summaryHTML = items.map(item => `
       <div class="order-summary-item">
         <span>${item.name} × ${item.quantity}</span>
-        <span>$${(item.price * item.quantity).toFixed(2)}</span>
       </div>
     `).join('');
 
     document.getElementById('checkout-summary').innerHTML = `
       <div class="order-summary">
         <h3>订单摘要</h3>
+        <div class="order-summary-item">
+          <span><strong>套餐类型:</strong></span>
+          <span>${planLabel}</span>
+        </div>
         ${summaryHTML}
         <div class="order-summary-total">
-          总计: $${total.toFixed(2)}
+          ${count} 顿 × $${(this.planPrices[selectedPlan] || 0).toFixed(2)} = $${total.toFixed(2)}
         </div>
       </div>
     `;
@@ -445,6 +454,12 @@ class App {
       return;
     }
 
+    const selectedPlan = window.cart.getPlan();
+    if (!selectedPlan) {
+      this.showMessage('请先选择套餐类型', 'error');
+      return;
+    }
+
     const note = document.getElementById('order-note')?.value || '';
 
     try {
@@ -457,6 +472,7 @@ class App {
           dish_id: item.id,
           quantity: item.quantity
         })),
+        plan_type: selectedPlan,
         note
       });
 
@@ -552,6 +568,10 @@ class App {
                   </div>
                 </div>
                 <div>
+                  <div style="margin-bottom: 15px;">
+                    <strong style="color: #a0aec0;">套餐类型</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${order.plan_type ? order.plan_type + '顿套餐' : '-'}</p>
+                  </div>
                   <div>
                     <strong style="color: #a0aec0;">备注</strong>
                     <p style="color: #e4e9f7; margin: 5px 0 0 0;">${order.note || '无'}</p>

@@ -25,7 +25,7 @@ const generateOrderNumber = async () => {
 // 创建订单
 const createOrder = async (req, res) => {
   try {
-    const { items, note } = req.body;
+    const { items, note, plan_type } = req.body;
     const customerId = req.userId;
 
     // 验证输入
@@ -36,15 +36,25 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // 验证菜品是否存在且可用
-    let totalPrice = 0;
-    const orderItems = [];
-
-    // 套餐价格映射
+    // 验证套餐类型
     const planPrices = {
       '5': 69.95,
       '10': 119.90
     };
+
+    const validPlan = plan_type && planPrices[plan_type];
+    if (!validPlan) {
+      return res.status(400).json({
+        success: false,
+        message: '请选择有效的套餐类型（5顿或10顿）'
+      });
+    }
+
+    const unitPrice = planPrices[plan_type];
+
+    // 验证菜品是否存在且可用
+    let totalPrice = 0;
+    const orderItems = [];
 
     for (const item of items) {
       const dish = await getAsync(
@@ -66,9 +76,6 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // 根据菜品的套餐类型（category）来获取价格
-      const planType = dish.category; // '5' 或 '10'
-      const unitPrice = planPrices[planType] || 0;
       const subtotal = unitPrice * item.quantity;
       totalPrice += subtotal;
 
@@ -76,19 +83,18 @@ const createOrder = async (req, res) => {
         dish_id: item.dish_id,
         quantity: item.quantity,
         unit_price: unitPrice,
-        dish_name: dish.name,
-        plan_type: planType
+        dish_name: dish.name
       });
     }
 
     // 生成订单号
     const orderNumber = await generateOrderNumber();
 
-    // 创建订单
+    // 创建订单（包含 plan_type）
     const orderResult = await runAsync(
-      `INSERT INTO orders (order_number, customer_id, status, note, total_price)
-       VALUES (?, ?, ?, ?, ?)`,
-      [orderNumber, customerId, 'submitted', note || null, totalPrice]
+      `INSERT INTO orders (order_number, customer_id, status, note, total_price, plan_type)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [orderNumber, customerId, 'submitted', note || null, totalPrice, plan_type]
     );
 
     const orderId = orderResult.id;
@@ -111,6 +117,7 @@ const createOrder = async (req, res) => {
         created_at: new Date().toISOString(),
         status: 'submitted',
         total_price: totalPrice,
+        plan_type: plan_type,
         items_count: orderItems.length
       }
     });

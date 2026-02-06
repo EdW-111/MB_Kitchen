@@ -96,6 +96,14 @@ const initDatabase = async () => {
     await runAsync(`CREATE INDEX IF NOT EXISTS idx_dishes_category ON dishes(category)`);
     console.log('✅ Indexes ready');
 
+    // 迁移：为 orders 表添加 plan_type 列
+    try {
+      await runAsync(`ALTER TABLE orders ADD COLUMN plan_type TEXT DEFAULT '5'`);
+      console.log('✅ Added plan_type column to orders');
+    } catch (e) {
+      // 列已存在则忽略
+    }
+
     console.log('✨ Database initialized successfully');
   } catch (error) {
     console.error('❌ Error initializing database:', error);

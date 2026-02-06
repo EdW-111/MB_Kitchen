@@ -11,6 +11,11 @@
     <nav>
       <div class="container">
         <div class="logo" id="logo">🍽️ MB Kitchen</div>
+        <button class="hamburger" id="hamburger-btn" aria-label="菜单">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         <ul class="nav-links">
           <li><a href="#" id="menu-nav">🍜 菜单</a></li>
           <li><a href="#" id="cart-nav">🛒 购物车</a></li>
@@ -39,22 +44,18 @@
 
       <!-- 菜单页 -->
       <div id="menu-page" class="page">
-        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
-          📋 菜单
-        </h2>
+        <h2 class="page-title">📋 菜单</h2>
         <div class="menu-container">
           <div class="category-filter">
             <div id="category-filter"></div>
           </div>
-          <div class="dishes-grid" id="dishes-container"></div>
+          <div id="dishes-container"></div>
         </div>
       </div>
 
       <!-- 购物车页 -->
       <div id="cart-page" class="page">
-        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
-          🛒 购物车
-        </h2>
+        <h2 class="page-title">🛒 购物车</h2>
         <div class="cart-container">
           <div class="cart-items">
             <div id="cart-items-container"></div>
@@ -73,9 +74,7 @@
 
       <!-- 结账页 -->
       <div id="checkout-page" class="page">
-        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
-          💳 确认订单
-        </h2>
+        <h2 class="page-title">💳 确认订单</h2>
         <div class="checkout-container">
           <div id="checkout-summary"></div>
 
@@ -107,17 +106,13 @@
 
       <!-- 订单页 -->
       <div id="orders-page" class="page">
-        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
-          📦 我的订单
-        </h2>
+        <h2 class="page-title">📦 我的订单</h2>
         <div class="orders-list" id="orders-container"></div>
       </div>
 
       <!-- 订单详情页 -->
       <div id="order-detail-page" class="page">
-        <h2 style="margin-bottom: 30px; color: var(--secondary-color)">
-          📦 订单详情
-        </h2>
+        <h2 class="page-title">📦 订单详情</h2>
         <button class="btn btn-secondary" onclick="app.navigate('orders')" style="margin-bottom: 20px;">← 返回订单列表</button>
         <div id="order-detail-container"></div>
       </div>
@@ -272,15 +267,6 @@
               立即注册
             </button>
           </div>
-          <div
-            style="
-              margin-top: 20px;
-              padding: 15px;
-              background-color: #2600ff;
-              border-radius: 5px;
-              font-size: 12px;
-            "
-          ></div>
         </div>
       </div>
     </div>
