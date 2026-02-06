@@ -1,15 +1,27 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const dbPath = process.env.DATABASE_PATH || './database.db';
 
+// 确保目录存在
+const dbDir = path.dirname(dbPath);
+if (dbDir !== '.' && !fs.existsSync(dbDir)) {
+  try {
+    fs.mkdirSync(dbDir, { recursive: true });
+    console.log(`📁 Created database directory: ${dbDir}`);
+  } catch (err) {
+    console.error(`❌ Failed to create database directory: ${err.message}`);
+  }
+}
+
 // 创建或连接数据库
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Error opening database:', err.message);
+    console.error('❌ Error opening database:', err.message);
   } else {
-    console.log('✅ Connected to SQLite database');
+    console.log(`✅ Connected to SQLite database at ${dbPath}`);
   }
 });
 
