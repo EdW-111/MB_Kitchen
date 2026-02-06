@@ -204,7 +204,7 @@ class App {
         categoryFilter.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="margin: 0;">分类</h3>
-            <div style="font-size: 14px; color: #666;">📅 本周: ${weekRange}</div>
+            <div style="font-size: 18px; color: #fffefe;">📅 本周: ${weekRange}</div>
           </div>
           <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <div style="flex: 1; padding: 15px; background: #f0f0f0; border-radius: 8px; text-align: center; color: #333; font-weight: bold;">
