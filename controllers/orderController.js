@@ -40,6 +40,12 @@ const createOrder = async (req, res) => {
     let totalPrice = 0;
     const orderItems = [];
 
+    // 套餐价格映射
+    const planPrices = {
+      '5': 69.95,
+      '10': 119.90
+    };
+
     for (const item of items) {
       const dish = await getAsync(
         'SELECT * FROM dishes WHERE id = ? AND is_available = 1',
@@ -60,14 +66,18 @@ const createOrder = async (req, res) => {
         });
       }
 
-      const subtotal = dish.price * item.quantity;
+      // 根据菜品的套餐类型（category）来获取价格
+      const planType = dish.category; // '5' 或 '10'
+      const unitPrice = planPrices[planType] || 0;
+      const subtotal = unitPrice * item.quantity;
       totalPrice += subtotal;
 
       orderItems.push({
         dish_id: item.dish_id,
         quantity: item.quantity,
-        unit_price: dish.price,
-        dish_name: dish.name
+        unit_price: unitPrice,
+        dish_name: dish.name,
+        plan_type: planType
       });
     }
 
