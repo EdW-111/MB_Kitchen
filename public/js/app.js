@@ -547,8 +547,6 @@ class App {
           <div class="order-detail-items-row">
             <span>${item.dish_name}</span>
             <span>${item.quantity}</span>
-            <span>$${item.unit_price_snapshot.toFixed(2)}</span>
-            <span>$${item.subtotal.toFixed(2)}</span>
           </div>
         `).join('');
 
@@ -583,11 +581,9 @@ class App {
             <div style="background: #1a2142; padding: 20px; border-radius: 12px; border: 1px solid #2d3561; margin-bottom: 20px;">
               <h4 style="color: #00d4aa; margin-bottom: 15px;">📋 订单产品</h4>
               <div style="background: #151b3d; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #2d3561; margin-bottom: 10px; font-weight: bold; color: #a0aec0;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #2d3561; margin-bottom: 10px; font-weight: bold; color: #a0aec0;">
                   <span>菜品名称</span>
                   <span>数量</span>
-                  <span>单价</span>
-                  <span>小计</span>
                 </div>
                 ${itemsHTML}
               </div>

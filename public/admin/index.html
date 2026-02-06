@@ -831,7 +831,6 @@
           const itemsHtml = order.items.map(item => `
             <div style="padding: 10px; background: #151b3d; border-radius: 8px; margin-bottom: 10px; border: 1px solid #2d3561;">
               <div><strong>${item.dish_name}</strong> x${item.quantity}</div>
-              <div style="color: #a0aec0; font-size: 12px;">单价: $${item.unit_price_snapshot.toFixed(2)} | 小计: $${item.subtotal.toFixed(2)}</div>
             </div>
           `).join('');
 

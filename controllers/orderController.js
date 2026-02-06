@@ -79,7 +79,7 @@ const createOrder = async (req, res) => {
       orderItems.push({
         dish_id: item.dish_id,
         quantity: item.quantity,
-        unit_price: unitPrice,
+        unit_price: 0,
         dish_name: dish.name
       });
     }
@@ -134,15 +134,15 @@ const getOrders = async (req, res) => {
     const customerId = req.userId;
 
     const orders = await allAsync(
-      `SELECT 
+      `SELECT
         o.id,
         o.order_number,
         o.status,
         o.note,
         o.created_at,
         o.updated_at,
-        (SELECT SUM(quantity * unit_price_snapshot) 
-         FROM order_items WHERE order_id = o.id) as total_price,
+        o.total_price,
+        o.plan_type,
         (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count
        FROM orders o
        WHERE o.customer_id = ?
@@ -185,28 +185,22 @@ const getOrderById = async (req, res) => {
 
     // 获取订单项
     const items = await allAsync(
-      `SELECT 
+      `SELECT
         oi.id,
         oi.dish_id,
         d.name as dish_name,
         d.category,
-        oi.quantity,
-        oi.unit_price_snapshot,
-        (oi.quantity * oi.unit_price_snapshot) as subtotal
+        oi.quantity
        FROM order_items oi
        LEFT JOIN dishes d ON oi.dish_id = d.id
        WHERE oi.order_id = ?`,
       [id]
     );
 
-    // 计算总价
-    const totalPrice = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-
     res.json({
       success: true,
       data: {
         ...order,
-        total_price: totalPrice,
         items
       }
     });
@@ -341,9 +335,7 @@ const getOrderDetailAdmin = async (req, res) => {
         d.name as dish_name,
         d.category,
         d.image_url,
-        oi.quantity,
-        oi.unit_price_snapshot,
-        (oi.quantity * oi.unit_price_snapshot) as subtotal
+        oi.quantity
        FROM order_items oi
        LEFT JOIN dishes d ON oi.dish_id = d.id
        WHERE oi.order_id = ?`,
