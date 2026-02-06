@@ -14,13 +14,15 @@ class App {
     this.init();
   }
 
-  // 获取当周日期范围
+  // 获取下周日期范围
   getWeekRange() {
     const today = new Date();
     const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff));
-    const sunday = new Date(today.setDate(diff + 6));
+    const diffToNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diffToNextMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
 
     const formatDate = (date) => {
       const m = date.getMonth() + 1;
