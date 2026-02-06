@@ -51,9 +51,9 @@ const createOrder = async (req, res) => {
     }
 
     const unitPrice = planPrices[plan_type];
+    const totalPrice = unitPrice; // 套餐固定价格
 
     // 验证菜品是否存在且可用
-    let totalPrice = 0;
     const orderItems = [];
 
     for (const item of items) {
@@ -75,9 +75,6 @@ const createOrder = async (req, res) => {
           message: '菜品数量必须大于0'
         });
       }
-
-      const subtotal = unitPrice * item.quantity;
-      totalPrice += subtotal;
 
       orderItems.push({
         dish_id: item.dish_id,

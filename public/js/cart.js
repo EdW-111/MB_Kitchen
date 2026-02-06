@@ -77,12 +77,10 @@ class Cart {
     return Object.values(this.items);
   }
 
-  // 获取购物车总价（根据 selectedPlan 计算）
+  // 获取购物车总价（套餐固定价格）
   getTotal() {
     if (!this.selectedPlan) return 0;
-    const count = this.getCount();
-    const unitPrice = this.planPrices[this.selectedPlan] || 0;
-    return unitPrice * count;
+    return this.planPrices[this.selectedPlan] || 0;
   }
 
   // 获取购物车项目数量

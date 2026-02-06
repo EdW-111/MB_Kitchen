@@ -436,7 +436,7 @@ class App {
         </div>
         ${summaryHTML}
         <div class="order-summary-total">
-          ${count} 顿 × $${(this.planPrices[selectedPlan] || 0).toFixed(2)} = $${total.toFixed(2)}
+          总计: $${total.toFixed(2)}
         </div>
       </div>
     `;
