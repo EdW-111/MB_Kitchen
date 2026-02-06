@@ -16,39 +16,15 @@ const { db, runAsync } = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 检查表是否存在（使用 allAsync）
-const tableExists = async (tableName) => {
-  try {
-    const result = await require('./config/db').allAsync(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-      [tableName]
-    );
-    return result && result.length > 0;
-  } catch (err) {
-    console.error(`Error checking table ${tableName}:`, err.message);
-    return false;
-  }
-};
-
 // 初始化数据库表结构（如果不存在）
 const initDatabase = async () => {
   try {
     const dbPath = process.env.DATABASE_PATH || './database.db';
     console.log(`📁 Using database at: ${dbPath}`);
 
-    // 延迟一下，确保数据库连接已建立
-    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log('🔧 Initializing database tables...');
 
-    // 检查表是否已存在
-    const customersExists = await tableExists('customers');
-    if (customersExists) {
-      console.log('✅ Database tables already exist - skipping recreation');
-      return;
-    }
-
-    console.log('🔧 Creating database tables...');
-
-    // 顾客表
+    // 顾客表 - 使用 CREATE TABLE IF NOT EXISTS 安全创建
     await runAsync(`
       CREATE TABLE IF NOT EXISTS customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
