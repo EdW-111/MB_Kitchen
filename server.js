@@ -16,17 +16,18 @@ const { db, runAsync } = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 检查表是否存在
-const tableExists = (tableName) => {
-  return new Promise((resolve) => {
-    db.get(
+// 检查表是否存在（使用 allAsync）
+const tableExists = async (tableName) => {
+  try {
+    const result = await require('./config/db').allAsync(
       "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-      [tableName],
-      (err, row) => {
-        resolve(!err && !!row);
-      }
+      [tableName]
     );
-  });
+    return result && result.length > 0;
+  } catch (err) {
+    console.error(`Error checking table ${tableName}:`, err.message);
+    return false;
+  }
 };
 
 // 初始化数据库表结构（如果不存在）
@@ -34,6 +35,9 @@ const initDatabase = async () => {
   try {
     const dbPath = process.env.DATABASE_PATH || './database.db';
     console.log(`📁 Using database at: ${dbPath}`);
+
+    // 延迟一下，确保数据库连接已建立
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     // 检查表是否已存在
     const customersExists = await tableExists('customers');
