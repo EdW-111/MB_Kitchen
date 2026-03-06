@@ -7,11 +7,39 @@ class App {
       '5': 69.95,
       '10': 119.90
     };
-    this.planLabels = {
-      '5': '5顿 $69.95（13.99/顿）',
-      '10': '10顿 $119.9（11.9/顿）'
-    };
     this.init();
+  }
+
+  // 获取套餐标签
+  getPlanLabel(plan) {
+    const lang = i18n.getCurrentLanguage();
+    const labels = {
+      zh: {
+        '5': '5顿 $69.95（13.99/顿）',
+        '10': '10顿 $119.9（11.9/顿）'
+      },
+      en: {
+        '5': '5-Meal $69.95 ($13.99/meal)',
+        '10': '10-Meal $119.90 ($11.90/meal)'
+      }
+    };
+    return labels[lang]?.[plan] || labels.zh[plan];
+  }
+
+  // 设置语言并重新渲染
+  setLanguage(lang) {
+    if (i18n.setLanguage(lang)) {
+      document.documentElement.lang = lang;
+      // 更新语言按钮状态
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.lang === lang) {
+          btn.classList.add('active');
+        }
+      });
+      // 重新渲染当前页面
+      this.render();
+    }
   }
 
   // 获取下周日期范围
@@ -61,7 +89,10 @@ class App {
   setupEventListeners() {
     // 导航
     document.getElementById('logo').addEventListener('click', () => this.navigate('home'));
-    document.getElementById('menu-nav').addEventListener('click', () => this.navigate('menu'));
+    document.getElementById('menu-nav').addEventListener('click', () => {
+      document.getElementById('menu-nav').textContent = `🍜 ${i18n.t('menu')}`;
+      this.navigate('menu');
+    });
     document.getElementById('cart-nav').addEventListener('click', () => this.navigate('cart'));
     document.getElementById('orders-nav').addEventListener('click', () => {
       if (this.currentUser) this.navigate('orders');
@@ -184,8 +215,13 @@ class App {
     const profileNav = document.getElementById('profile-nav');
     if (!authSection) return;
 
-    // 显示/隐藏个人资料链接
+    // 更新导航文本
+    const menuNav = document.getElementById('menu-nav');
+    const ordersNav = document.getElementById('orders-nav');
+    if (menuNav) menuNav.textContent = `🍜 ${i18n.t('menu')}`;
+    if (ordersNav) ordersNav.textContent = `📦 ${i18n.t('orders')}`;
     if (profileNav) {
+      profileNav.textContent = `👤 ${i18n.t('myProfile')}`;
       profileNav.style.display = this.currentUser ? 'block' : 'none';
     }
 
@@ -194,13 +230,13 @@ class App {
         <span class="user-info">
           👤 ${this.currentUser.full_name}
         </span>
-        <button id="logout-btn" class="btn btn-secondary btn-sm">退出</button>
+        <button id="logout-btn" class="btn btn-secondary btn-sm">${i18n.t('logout')}</button>
       `;
       document.getElementById('logout-btn').addEventListener('click', () => this.logout());
     } else {
       authSection.innerHTML = `
-        <button id="login-btn" class="btn btn-primary btn-sm">登录</button>
-        <button id="register-btn" class="btn btn-secondary btn-sm">注册</button>
+        <button id="login-btn" class="btn btn-primary btn-sm">${i18n.t('login')}</button>
+        <button id="register-btn" class="btn btn-secondary btn-sm">${i18n.t('register')}</button>
       `;
       document.getElementById('login-btn').addEventListener('click', () => this.navigate('login'));
       document.getElementById('register-btn').addEventListener('click', () => this.navigate('register'));
@@ -210,7 +246,7 @@ class App {
     const cartCount = window.cart.getCount();
     const cartNav = document.getElementById('cart-nav');
     if (cartNav) {
-      cartNav.innerHTML = `🛒 购物车 ${cartCount > 0 ? `<span class="cart-badge">${cartCount}</span>` : ''}`;
+      cartNav.innerHTML = `🛒 ${i18n.t('cart')} ${cartCount > 0 ? `<span class="cart-badge">${cartCount}</span>` : ''}`;
     }
   }
 
@@ -226,27 +262,27 @@ class App {
         const weekRange = this.getWeekRange();
         categoryFilter.innerHTML = `
           <div class="plan-info-header">
-            <h3>本周菜单</h3>
+            <h3>${i18n.t('weeklyMenu')}</h3>
             <div class="plan-info-week">📅 ${weekRange}</div>
           </div>
           <div class="plan-info-card">
-            <div class="plan-info-card-title">5顿套餐</div>
-            <div class="plan-info-card-price">$69.95</div>
-            <div class="plan-info-card-unit">$13.99/顿</div>
+            <div class="plan-info-card-title">${i18n.t('meal5Plan')}</div>
+            <div class="plan-info-card-price">${i18n.t('meal5Price')}</div>
+            <div class="plan-info-card-unit">${i18n.t('meal5Unit')}</div>
           </div>
           <div class="plan-info-card plan-info-card-highlight">
-            <div class="plan-info-card-title">10顿套餐</div>
-            <div class="plan-info-card-price">$119.90</div>
-            <div class="plan-info-card-unit">$11.99/顿</div>
+            <div class="plan-info-card-title">${i18n.t('meal10Plan')}</div>
+            <div class="plan-info-card-price">${i18n.t('meal10Price')}</div>
+            <div class="plan-info-card-unit">${i18n.t('meal10Unit')}</div>
           </div>
-          <p class="plan-info-hint">在购物车中选择套餐</p>
+          <p class="plan-info-hint">${i18n.t('selectPlanInCart')}</p>
         `;
       }
 
       // 加载所有菜品
       await this.loadDishes('');
     } catch (error) {
-      this.showMessage('加载菜单失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loadFailed') + ': ' + error.message, 'error');
     }
   }
 
@@ -259,7 +295,7 @@ class App {
       if (!container) return;
 
       if (dishes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h3>暂无菜品</h3></div>';
+        container.innerHTML = `<div class="empty-state"><h3>${i18n.t('noDishes')}</h3></div>`;
         return;
       }
 
@@ -277,13 +313,13 @@ class App {
           const dish = dishes.find(d => d.id === dishId);
           if (dish) {
             window.cart.addItem(dish);
-            this.showMessage(`已将 "${dish.name}" 加入购物车`, 'success');
+            this.showMessage(i18n.t('addedToCart', { name: dish.name }), 'success');
             this.updateNavbar();
           }
         });
       });
     } catch (error) {
-      this.showMessage('加载菜品失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loadFailed') + ': ' + error.message, 'error');
     }
   }
 
@@ -297,9 +333,9 @@ class App {
         <div class="dish-image">${imageContent}</div>
         <div class="dish-info">
           <div class="dish-name">${dish.name}</div>
-          <div class="dish-description">${dish.description || '暂无描述'}</div>
+          <div class="dish-description">${dish.description || i18n.t('noDescription')}</div>
           <div class="dish-actions">
-            <button class="btn btn-primary btn-sm add-to-cart-btn" data-dish-id="${dish.id}">加入购物车</button>
+            <button class="btn btn-primary btn-sm add-to-cart-btn" data-dish-id="${dish.id}">${i18n.t('addToCart')}</button>
           </div>
         </div>
       </div>
@@ -317,9 +353,9 @@ class App {
     if (items.length === 0) {
       document.getElementById('cart-items-container').innerHTML = `
         <div class="empty-state">
-          <h3>购物车为空</h3>
-          <p>快去菜单里添加一些菜品吧！</p>
-          <button class="btn btn-primary" onclick="app.navigate('menu')">浏览菜单</button>
+          <h3>${i18n.t('emptyCart')}</h3>
+          <p>${i18n.t('quickGoDishes')}</p>
+          <button class="btn btn-primary" onclick="app.navigate('menu')">${i18n.t('browseDishes')}</button>
         </div>
       `;
       // 清空摘要
@@ -327,10 +363,10 @@ class App {
       if (summaryContainer) {
         summaryContainer.innerHTML = `
           <div class="summary-row">
-            <span>小计:</span>
+            <span>${i18n.t('subtotal')}</span>
             <span>$0.00</span>
           </div>
-          <button class="btn btn-primary" id="checkout-btn" disabled>继续结账 →</button>
+          <button class="btn btn-primary" id="checkout-btn" disabled>${i18n.t('checkout')}</button>
         `;
       }
       return;
@@ -339,17 +375,17 @@ class App {
     // 套餐选择器 + 菜品列表
     const planSelectorHTML = `
       <div class="plan-selector">
-        <h4 class="plan-selector-title">选择套餐类型</h4>
+        <h4 class="plan-selector-title">${i18n.t('selectPlanType')}</h4>
         <div class="plan-selector-options">
           <label class="plan-option ${selectedPlan === '5' ? 'selected' : ''}">
             <input type="radio" name="plan" value="5" ${selectedPlan === '5' ? 'checked' : ''}>
-            <span class="plan-option-label">5顿套餐</span>
-            <span class="plan-option-price">$69.95 / 顿</span>
+            <span class="plan-option-label">${i18n.t('meal5Per')}</span>
+            <span class="plan-option-price">$69.95 / ${i18n.t('meal5Unit').split('/')[1].trim()}</span>
           </label>
           <label class="plan-option ${selectedPlan === '10' ? 'selected' : ''}">
             <input type="radio" name="plan" value="10" ${selectedPlan === '10' ? 'checked' : ''}>
-            <span class="plan-option-label">10顿套餐</span>
-            <span class="plan-option-price">$119.90 / 顿</span>
+            <span class="plan-option-label">${i18n.t('meal10Per')}</span>
+            <span class="plan-option-price">$119.90 / ${i18n.t('meal10Unit').split('/')[1].trim()}</span>
           </label>
         </div>
       </div>
@@ -363,7 +399,7 @@ class App {
         <div class="quantity-control">
           <input type="number" class="quantity-input" data-dish-id="${item.id}" value="${item.quantity}" min="1" max="99">
         </div>
-        <button class="btn btn-danger btn-sm remove-btn" data-dish-id="${item.id}">删除</button>
+        <button class="btn btn-danger btn-sm remove-btn" data-dish-id="${item.id}">${i18n.t('remove')}</button>
       </div>
     `).join('');
 
@@ -382,25 +418,25 @@ class App {
     const count = window.cart.getCount();
     const summaryContainer = document.querySelector('.cart-summary');
     if (summaryContainer) {
-      const planLabel = selectedPlan ? this.planLabels[selectedPlan] : '未选择';
+      const planLabel = selectedPlan ? this.getPlanLabel(selectedPlan) : 'N/A';
       const canCheckout = selectedPlan !== null;
       summaryContainer.innerHTML = `
         ${selectedPlan ? `
         <div class="plan-summary-card">
-          <h4>套餐统计</h4>
+          <h4>${i18n.t('mealStats')}</h4>
           <div>${planLabel} × ${count}</div>
         </div>
         ` : `
         <div class="plan-summary-warning">
-          请先选择套餐类型
+          ${i18n.t('selectPlanWarning')}
         </div>
         `}
         <div class="summary-row">
-          <span>小计:</span>
+          <span>${i18n.t('subtotal')}</span>
           <span>$${total.toFixed(2)}</span>
         </div>
         <button class="btn btn-primary" id="checkout-btn" ${canCheckout ? '' : 'disabled'}>
-          继续结账 →
+          ${i18n.t('checkout')}
         </button>
       `;
       document.getElementById('checkout-btn').addEventListener('click', () => {
@@ -421,7 +457,7 @@ class App {
     const selectedPlan = window.cart.getPlan();
     const total = window.cart.getTotal();
     const count = window.cart.getCount();
-    const planLabel = selectedPlan ? this.planLabels[selectedPlan] : '未选择';
+    const planLabel = selectedPlan ? this.getPlanLabel(selectedPlan) : 'N/A';
 
     const summaryHTML = items.map(item => `
       <div class="order-summary-item">
@@ -431,14 +467,14 @@ class App {
 
     document.getElementById('checkout-summary').innerHTML = `
       <div class="order-summary">
-        <h3>订单摘要</h3>
+        <h3>${i18n.t('orderSummary')}</h3>
         <div class="order-summary-item">
-          <span><strong>套餐类型:</strong></span>
+          <span><strong>${i18n.t('planType')}</strong></span>
           <span>${planLabel}</span>
         </div>
         ${summaryHTML}
         <div class="order-summary-total">
-          总计: $${total.toFixed(2)}
+          ${i18n.t('total')} $${total.toFixed(2)}
         </div>
       </div>
     `;
@@ -446,19 +482,19 @@ class App {
 
   async handleSubmitOrder() {
     if (!this.currentUser) {
-      this.showMessage('请先登录', 'error');
+      this.showMessage(i18n.t('pleaseLogin'), 'error');
       return;
     }
 
     const items = window.cart.getItems();
     if (items.length === 0) {
-      this.showMessage('购物车为空', 'error');
+      this.showMessage(i18n.t('emptyCartError'), 'error');
       return;
     }
 
     const selectedPlan = window.cart.getPlan();
     if (!selectedPlan) {
-      this.showMessage('请先选择套餐类型', 'error');
+      this.showMessage(i18n.t('selectPlanError'), 'error');
       return;
     }
 
@@ -467,7 +503,7 @@ class App {
     try {
       const submitBtn = document.getElementById('submit-order-btn');
       submitBtn.disabled = true;
-      submitBtn.textContent = '提交中...';
+      submitBtn.textContent = i18n.t('submitting');
 
       const res = await window.api.orders.create({
         items: items.map(item => ({
@@ -480,17 +516,17 @@ class App {
 
       if (res.success) {
         window.cart.clear();
-        this.showMessage(`订单已提交！订单号: ${res.order.order_number}`, 'success');
+        this.showMessage(i18n.t('orderSubmitted', { orderNumber: res.order.order_number }), 'success');
         setTimeout(() => {
           this.navigate('orders');
         }, 1500);
       }
     } catch (error) {
-      this.showMessage('提交订单失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loadFailed') + ': ' + error.message, 'error');
     } finally {
       const submitBtn = document.getElementById('submit-order-btn');
       submitBtn.disabled = false;
-      submitBtn.textContent = '提交订单';
+      submitBtn.textContent = i18n.t('submitOrder');
     }
   }
 
@@ -509,7 +545,7 @@ class App {
       if (!container) return;
 
       if (orders.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h3>还没有订单</h3><p>快去下一个订单吧！</p></div>';
+        container.innerHTML = `<div class="empty-state"><h3>${i18n.t('noOrders')}</h3><p>${i18n.t('goOrder')}</p></div>`;
         return;
       }
 
@@ -517,8 +553,8 @@ class App {
         <div class="order-item" data-order-id="${order.id}" style="cursor: pointer;">
           <div class="order-info">
             <h3>${order.order_number}</h3>
-            <p>下单时间: ${new Date(order.created_at).toLocaleString('zh-CN')}</p>
-            <p>金额: $${order.total_price?.toFixed(2) || '0.00'}</p>
+            <p>${i18n.t('orderTime')}: ${new Date(order.created_at).toLocaleString('zh-CN')}</p>
+            <p>${i18n.t('amount')}: $${order.total_price?.toFixed(2) || '0.00'}</p>
           </div>
           <div>
             <span class="order-status ${order.status}">${this.getStatusLabel(order.status)}</span>
@@ -536,7 +572,7 @@ class App {
         });
       });
     } catch (error) {
-      this.showMessage('加载订单失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loadFailed') + ': ' + error.message, 'error');
     }
   }
 
@@ -552,6 +588,9 @@ class App {
           </div>
         `).join('');
 
+        const planDisplay = order.plan_type ? order.plan_type + (i18n.getCurrentLanguage() === 'zh' ? '顿套餐' : '-Meal Plan') : '-';
+        const noteDisplay = order.note || (i18n.getCurrentLanguage() === 'zh' ? '无' : 'None');
+
         const detailHTML = `
           <div class="order-detail">
             <div style="background: #1a2142; padding: 20px; border-radius: 12px; border: 1px solid #2d3561; margin-bottom: 20px;">
@@ -559,38 +598,38 @@ class App {
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div>
                   <div style="margin-bottom: 15px;">
-                    <strong style="color: #a0aec0;">订单时间</strong>
+                    <strong style="color: #a0aec0;">${i18n.t('orderTime2')}</strong>
                     <p style="color: #e4e9f7; margin: 5px 0 0 0;">${new Date(order.created_at).toLocaleString('zh-CN')}</p>
                   </div>
                   <div>
-                    <strong style="color: #a0aec0;">订单状态</strong>
+                    <strong style="color: #a0aec0;">${i18n.t('orderStatus')}</strong>
                     <p style="color: #e4e9f7; margin: 5px 0 0 0;"><span class="order-status ${order.status}">${this.getStatusLabel(order.status)}</span></p>
                   </div>
                 </div>
                 <div>
                   <div style="margin-bottom: 15px;">
-                    <strong style="color: #a0aec0;">套餐类型</strong>
-                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${order.plan_type ? order.plan_type + '顿套餐' : '-'}</p>
+                    <strong style="color: #a0aec0;">${i18n.t('planTypeLabel')}</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${planDisplay}</p>
                   </div>
                   <div>
-                    <strong style="color: #a0aec0;">备注</strong>
-                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${order.note || '无'}</p>
+                    <strong style="color: #a0aec0;">${i18n.t('note')}</strong>
+                    <p style="color: #e4e9f7; margin: 5px 0 0 0;">${noteDisplay}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div style="background: #1a2142; padding: 20px; border-radius: 12px; border: 1px solid #2d3561; margin-bottom: 20px;">
-              <h4 style="color: #00d4aa; margin-bottom: 15px;">📋 订单产品</h4>
+              <h4 style="color: #00d4aa; margin-bottom: 15px;">📋 ${i18n.t('orderProducts')}</h4>
               <div style="background: #151b3d; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #2d3561; margin-bottom: 10px; font-weight: bold; color: #a0aec0;">
-                  <span>菜品名称</span>
-                  <span>数量</span>
+                  <span>${i18n.t('dishName')}</span>
+                  <span>${i18n.t('quantity')}</span>
                 </div>
                 ${itemsHTML}
               </div>
               <div style="text-align: right; padding: 15px; background: #151b3d; border-radius: 8px;">
-                <strong style="color: #00d4aa; font-size: 18px;">总计: $${order.total_price.toFixed(2)}</strong>
+                <strong style="color: #00d4aa; font-size: 18px;">${i18n.t('total')}: $${order.total_price.toFixed(2)}</strong>
               </div>
             </div>
           </div>
@@ -604,22 +643,31 @@ class App {
           document.getElementById('order-detail-page').classList.add('active');
         }
       } else {
-        this.showMessage('订单不存在', 'error');
+        this.showMessage(i18n.t('loadFailed'), 'error');
         this.navigate('orders');
       }
     } catch (error) {
-      this.showMessage('加载订单详情失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loadFailed') + ': ' + error.message, 'error');
     }
   }
 
   getStatusLabel(status) {
+    const lang = i18n.getCurrentLanguage();
     const labels = {
-      submitted: '已提交',
-      accepted: '已接受',
-      completed: '已完成',
-      cancelled: '已取消'
+      zh: {
+        submitted: i18n.t('submittedStatus'),
+        accepted: i18n.t('acceptedStatus'),
+        completed: i18n.t('completedStatus'),
+        cancelled: i18n.t('cancelledStatus')
+      },
+      en: {
+        submitted: i18n.t('submittedStatus'),
+        accepted: i18n.t('acceptedStatus'),
+        completed: i18n.t('completedStatus'),
+        cancelled: i18n.t('cancelledStatus')
+      }
     };
-    return labels[status] || status;
+    return labels[lang]?.[status] || status;
   }
 
   // ==================== 认证 ====================
@@ -639,18 +687,18 @@ class App {
 
     // 验证
     if (!data.full_name || !data.phone || !data.wechat || !data.password || !data.address) {
-      this.showMessage('请填写所有必填项', 'error');
+      this.showMessage(i18n.t('fillAllRequired'), 'error');
       return;
     }
 
     try {
       const res = await window.api.auth.register(data);
       if (res.success) {
-        this.showMessage('注册成功！', 'success');
+        this.showMessage(i18n.t('registrationSuccess'), 'success');
         setTimeout(() => this.navigate('menu'), 1000);
       }
     } catch (error) {
-      this.showMessage('注册失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('registrationError') + ': ' + error.message, 'error');
     }
   }
 
@@ -662,7 +710,7 @@ class App {
     const password = formData.get('password');
 
     if ((!phone && !email) || !password) {
-      this.showMessage('请输入登录信息', 'error');
+      this.showMessage(i18n.t('pleaseEnterLoginInfo'), 'error');
       return;
     }
 
@@ -676,11 +724,11 @@ class App {
       if (res.success) {
         window.api.setToken(res.token);
         this.currentUser = res.user;
-        this.showMessage('登录成功！', 'success');
+        this.showMessage(i18n.t('loginSuccess'), 'success');
         setTimeout(() => this.navigate('menu'), 1000);
       }
     } catch (error) {
-      this.showMessage('登录失败: ' + error.message, 'error');
+      this.showMessage(i18n.t('loginError') + ': ' + error.message, 'error');
     }
   }
 
@@ -688,7 +736,7 @@ class App {
     window.api.setToken(null);
     this.currentUser = null;
     window.cart.clear();
-    this.showMessage('已退出登录', 'info');
+    this.showMessage(i18n.t('invalidToken'), 'info');
     this.navigate('home');
   }
 
@@ -709,4 +757,106 @@ class App {
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new App();
+  window.app.translateStaticText();
 });
+
+// 在App类中添加翻译静态文本的方法
+App.prototype.translateStaticText = function() {
+  // 首页
+  const homePageH1 = document.querySelector('#home-page h1');
+  const homePageP = document.querySelector('#home-page p');
+  const homePageBtn = document.querySelector('#home-page .btn-primary');
+  if (homePageH1) homePageH1.textContent = i18n.t('mbKitchen');
+  if (homePageP) homePageP.textContent = i18n.t('healthyMeals');
+  if (homePageBtn) homePageBtn.textContent = i18n.t('startOrdering');
+
+  // 菜单页
+  const menuTitle = document.querySelector('#menu-page .page-title');
+  if (menuTitle) menuTitle.innerHTML = '📋 ' + i18n.t('menuTitle');
+
+  // 购物车页
+  const cartTitle = document.querySelector('#cart-page .page-title');
+  if (cartTitle) cartTitle.innerHTML = '🛒 ' + i18n.t('cartTitle');
+
+  // 结账页
+  const checkoutTitle = document.querySelector('#checkout-page .page-title');
+  if (checkoutTitle) checkoutTitle.innerHTML = '💳 ' + i18n.t('checkoutTitle');
+
+  const orderNote = document.querySelector('label[for="order-note"]');
+  if (orderNote) orderNote.textContent = i18n.t('orderNote');
+
+  const orderNoteTa = document.querySelector('#order-note');
+  if (orderNoteTa) orderNoteTa.placeholder = i18n.t('notePlaceholder');
+
+  const submitBtn = document.querySelector('#submit-order-btn');
+  if (submitBtn) submitBtn.textContent = i18n.t('submitOrder');
+
+  const backBtn = document.querySelector('[onclick="app.navigate(\'cart\')"]');
+  if (backBtn) backBtn.textContent = i18n.t('backToCart');
+
+  // 订单页
+  const ordersTitle = document.querySelector('#orders-page .page-title');
+  if (ordersTitle) ordersTitle.innerHTML = '📦 ' + i18n.t('ordersTitle');
+
+  const orderDetailTitle = document.querySelector('#order-detail-page .page-title');
+  if (orderDetailTitle) orderDetailTitle.innerHTML = '📦 ' + i18n.t('orderDetails');
+
+  // 注册页
+  const registerTitle = document.querySelector('#register-page h2');
+  if (registerTitle) registerTitle.textContent = i18n.t('createAccount');
+
+  const registerLabels = {
+    'register-name': i18n.t('nameLabel'),
+    'register-phone': i18n.t('phoneLabel'),
+    'register-wechat': i18n.t('wechatLabel'),
+    'register-password': i18n.t('passwordLabel'),
+    'reg-height': i18n.t('heightLabel'),
+    'reg-weight': i18n.t('weightLabel'),
+    'reg-address': i18n.t('addressLabel'),
+    'reg-additional': i18n.t('specialNeedsLabel')
+  };
+
+  for (const [id, label] of Object.entries(registerLabels)) {
+    const element = document.querySelector(`label[for="${id}"]`);
+    if (element) element.textContent = label;
+  }
+
+  const regAdditional = document.querySelector('#reg-additional');
+  if (regAdditional) regAdditional.placeholder = i18n.t('specialNeedsPlaceholder');
+
+  const registerBtn = document.querySelector('#register-form button[type="submit"]');
+  if (registerBtn) registerBtn.textContent = i18n.t('registerBtn');
+
+  const switchAuthRegister = document.querySelector('#register-page .switch-auth');
+  if (switchAuthRegister) {
+    switchAuthRegister.innerHTML = i18n.t('haveAccount') + '<button onclick="app.navigate(\'login\')" style="background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer;">' + i18n.t('goLogin') + '</button>';
+  }
+
+  // 登录页
+  const loginTitle = document.querySelector('#login-page h2');
+  if (loginTitle) loginTitle.textContent = i18n.t('userLogin');
+
+  const loginLabels = {
+    'login-phone': i18n.t('phoneLabel'),
+    'login-password': i18n.t('passwordRequired')
+  };
+
+  for (const [id, label] of Object.entries(loginLabels)) {
+    const element = document.querySelector(`label[for="${id}"]`);
+    if (element) element.textContent = label;
+  }
+
+  const loginBtn = document.querySelector('#login-form button[type="submit"]');
+  if (loginBtn) loginBtn.textContent = i18n.t('loginBtn');
+
+  const switchAuthLogin = document.querySelector('#login-page .switch-auth');
+  if (switchAuthLogin) {
+    switchAuthLogin.innerHTML = i18n.t('noAccount') + '<button onclick="app.navigate(\'register\')" style="background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer;">' + i18n.t('registerNow') + '</button>';
+  }
+
+  // 页脚
+  const footer = document.querySelector('footer p');
+  if (footer) {
+    footer.innerHTML = i18n.t('footerText') + ' | <a href="/admin/orders" style="color: white; text-decoration: underline">' + i18n.t('viewAllOrders') + '</a>';
+  }
+};

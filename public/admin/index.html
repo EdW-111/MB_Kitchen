@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理面板 - MB Kitchen</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/i18n.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #0a0e27; color: #e4e9f7; }
@@ -183,17 +184,17 @@
   <!-- 登陆界面 -->
   <div id="login-container" class="login-container">
     <div class="login-box">
-      <div class="login-title">🍽️ 管理员登录</div>
+      <div class="login-title" id="login-title">🍽️ 管理员登录</div>
       <div class="login-form">
         <div class="form-group">
-          <label>用户名</label>
-          <input type="text" id="admin-username" placeholder="输入用户名">
+          <label id="username-label">用户名</label>
+          <input type="text" id="admin-username" placeholder="输入用户名" />
         </div>
         <div class="form-group">
-          <label>密码</label>
+          <label id="password-label">密码</label>
           <input type="password" id="admin-password" placeholder="输入密码" onkeypress="if(event.key==='Enter') adminLogin()">
         </div>
-        <button class="login-btn" onclick="adminLogin()">登 录</button>
+        <button class="login-btn" onclick="adminLogin()" id="admin-login-btn">登 录</button>
       </div>
     </div>
   </div>
@@ -373,8 +374,29 @@
   </div>
 
   <script>
-    const statusLabels = { submitted: '已提交', accepted: '已接受', completed: '已完成', cancelled: '已取消' };
-    const categoryLabels = { '5': '5顿套餐', '10': '10顿套餐' };
+    // 翻译函数速记
+    const t = (key, params) => i18n.t(key, params);
+
+    // 动态生成状态标签
+    function getStatusLabels() {
+      return {
+        submitted: t('submittedStatus'),
+        accepted: t('acceptedStatus'),
+        completed: t('completedStatus'),
+        cancelled: t('cancelledStatus')
+      };
+    }
+
+    // 动态生成分类标签
+    function getCategoryLabels() {
+      return {
+        '5': t('meal5Plan'),
+        '10': t('meal10Plan')
+      };
+    }
+
+    let statusLabels = getStatusLabels();
+    let categoryLabels = getCategoryLabels();
     let currentOrderId = null;
     let currentDishId = null;
     let selectedStatus = null;
@@ -710,7 +732,18 @@
       window.location.href = '/';
     }
 
+    // 翻译管理面板
+    function translateAdminPanel() {
+      document.getElementById('login-title').textContent = t('adminLogin');
+      document.getElementById('username-label').textContent = t('username');
+      document.getElementById('password-label').textContent = t('passwordRequired');
+      document.getElementById('admin-login-btn').textContent = t('loginBtn');
+      document.getElementById('admin-username').placeholder = t('enterUsername');
+      document.getElementById('admin-password').placeholder = t('enterPassword');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      translateAdminPanel();
       checkAdminAuth();
       setupImageUploadHandler();
       // 每 5 分钟检查一次认证状态

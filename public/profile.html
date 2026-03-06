@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的资料 - MB Kitchen</title>
+  <script src="/js/i18n.js"></script>
   <style>
     * {
       margin: 0;
@@ -180,9 +181,9 @@
 </head>
 <body>
   <div class="container">
-    <a href="/" class="back-link">← 返回首页</a>
+    <a href="/" class="back-link" id="back-home">← 返回首页</a>
 
-    <h1>👤 我的资料</h1>
+    <h1>👤 <span id="profile-title">我的资料</span></h1>
 
     <div id="errorMsg" class="error" style="display:none;"></div>
     <div id="successMsg" class="success" style="display:none;"></div>
@@ -254,8 +255,75 @@
   <script>
     let currentUser = null;
 
+    // 翻译页面
+    function translatePage() {
+      document.getElementById('profile-title').textContent = i18n.t('myProfileTitle');
+      document.getElementById('back-home').textContent = '← ' + i18n.t('backHome');
+
+      const labels = {
+        'displayName': i18n.t('fullName'),
+        'displayPhone': i18n.t('phone'),
+        'displayHeight': i18n.t('height'),
+        'displayWeight': i18n.t('weight'),
+        'displayAddress': i18n.t('address'),
+        'displayAdditional': i18n.t('specialNeeds')
+      };
+
+      // 更新显示标签
+      document.querySelectorAll('.info-label').forEach(label => {
+        const text = label.textContent.replace('：', '');
+        for (const [, translated] of Object.entries(labels)) {
+          if (text === translated.split('：')[0]) {
+            label.textContent = translated + '：';
+            break;
+          }
+        }
+      });
+
+      // 更新按钮和标签
+      const editBtn = document.querySelector('button:nth-of-type(1)');
+      if (editBtn && editBtn.textContent.includes('编辑')) {
+        editBtn.textContent = '✏️ ' + i18n.t('editProfile');
+        editBtn.onclick = toggleEditForm;
+      }
+
+      document.querySelectorAll('.profile-section label').forEach(label => {
+        const labelMap = {
+          '姓名': 'fullName',
+          '身高': 'height',
+          '体重': 'weight',
+          '地址': 'address',
+          '特殊需求': 'specialNeeds'
+        };
+        for (const [zh, key] of Object.entries(labelMap)) {
+          if (label.textContent.includes(zh)) {
+            label.textContent = i18n.t(key);
+            break;
+          }
+        }
+      });
+
+      const inputs = document.querySelectorAll('input[type="text"], input[type="number"]');
+      const heightInput = document.querySelector('#editHeight');
+      const weightInput = document.querySelector('#editWeight');
+      if (heightInput) heightInput.placeholder = i18n.t('height') + ' (cm)';
+      if (weightInput) weightInput.placeholder = i18n.t('weight') + ' (kg)';
+
+      const submitBtn = document.querySelector('form button[type="submit"]');
+      if (submitBtn) submitBtn.textContent = '💾 ' + i18n.t('save');
+
+      const cancelBtn = document.querySelector('form .btn-secondary');
+      if (cancelBtn) cancelBtn.textContent = i18n.t('cancel');
+
+      const additionalInput = document.querySelector('#editAdditional');
+      if (additionalInput) additionalInput.placeholder = i18n.t('specialNeedsPlaceholder');
+    }
+
     // 页面加载时获取用户信息
-    window.addEventListener('load', loadProfile);
+    window.addEventListener('load', () => {
+      loadProfile();
+      translatePage();
+    });
 
     async function loadProfile() {
       try {
@@ -274,19 +342,19 @@
           currentUser = data.data;
           displayProfile(currentUser);
         } else {
-          showError(data.message || '获取用户信息失败');
+          showError(data.message || i18n.t('getProfileFailed'));
         }
       } catch (error) {
         console.error('获取用户信息错误:', error);
-        showError('获取用户信息失败');
+        showError(i18n.t('getProfileFailed'));
       }
     }
 
     function displayProfile(user) {
       document.getElementById('displayName').textContent = user.full_name || '-';
       document.getElementById('displayPhone').textContent = user.phone || '-';
-      document.getElementById('displayHeight').textContent = user.height ? `${user.height} cm` : '-';
-      document.getElementById('displayWeight').textContent = user.weight ? `${user.weight} kg` : '-';
+      document.getElementById('displayHeight').textContent = user.height ? `${user.height} ${i18n.t('heightCm')}` : '-';
+      document.getElementById('displayWeight').textContent = user.weight ? `${user.weight} ${i18n.t('weightKg')}` : '-';
       document.getElementById('displayAddress').textContent = user.address || '-';
       document.getElementById('displayAdditional').textContent = user.additional_info || '-';
 
@@ -329,13 +397,13 @@
           currentUser = data.data;
           displayProfile(currentUser);
           toggleEditForm();
-          showSuccess('资料已更新');
+          showSuccess(i18n.t('profileUpdated'));
         } else {
-          showError(data.message || '更新失败');
+          showError(data.message || i18n.t('updateFailed'));
         }
       } catch (error) {
         console.error('更新错误:', error);
-        showError('更新失败');
+        showError(i18n.t('updateFailed'));
       }
     });
 
