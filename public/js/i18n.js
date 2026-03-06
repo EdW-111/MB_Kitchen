@@ -251,7 +251,7 @@ const i18n = {
 
       // Home
       mbKitchen: 'MB Kitchen',
-      healthyMeals: 'Healthy meals for Chinese tastes',
+      healthyMeals: 'Healthy Meals, Rooted in Chinese Flavor',
       startOrdering: 'Start Ordering',
 
       // Menu
@@ -446,7 +446,7 @@ const i18n = {
       registerTime: 'Register Time',
 
       // Footer
-      footerText: '&copy; 2025 MB Kitchen - Healthy meals for Chinese tastes | MVP v1.0',
+      footerText: '&copy; 2025 MB Kitchen - Healthy Meals, Rooted in Chinese Flavor | MVP v1.0',
       viewAllOrders: '📊 View All Orders',
     }
   },
