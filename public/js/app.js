@@ -37,6 +37,8 @@ class App {
           btn.classList.add('active');
         }
       });
+      // 立即翻译所有静态文本
+      this.translateStaticText();
       // 重新渲染当前页面
       this.render();
     }
